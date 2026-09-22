@@ -12,10 +12,10 @@
             type="text"
             required
             maxlength="9"
-            style="text-align: center;"
+            style="text-align: center"
             :class="{
               'dni-valido': dniComprobado && dniValido,
-              'dni-invalido': dniComprobado && !dniValido
+              'dni-invalido': dniComprobado && !dniValido,
             }"
             @input="
               novoPaciente.dni = novoPaciente.dni.toUpperCase();
@@ -26,12 +26,7 @@
 
         <div class="campo campo-nome">
           <label for="nome">Nome:</label>
-          <input
-            id="nome"
-            v-model="novoPaciente.nome"
-            type="text"
-            required
-          />
+          <input id="nome" v-model="novoPaciente.nome" type="text" required />
         </div>
 
         <div class="campo campo-apelidos">
@@ -47,7 +42,7 @@
 
       <div class="fila">
         <div class="campo campo-fechanacimiento">
-          <label for="fechaNacimiento">Fecha Nacimiento:</label>
+          <label for="fechaNacimiento">Nacimiento:</label>
           <input
             id="fechaNacimiento"
             v-model="novoPaciente.fechaNacimiento"
@@ -80,20 +75,12 @@
       <div class="fila">
         <div class="campo campo-direccion">
           <label for="direccion">Dirección:</label>
-          <input
-            id="direccion"
-            v-model="novoPaciente.direccion"
-            type="text"
-          />
+          <input id="direccion" v-model="novoPaciente.direccion" type="text" />
         </div>
 
         <div class="campo campo-provincia">
           <label for="provincia">Provincia:</label>
-          <select
-            id="provincia"
-            v-model="novoPaciente.provincia"
-            required
-          >
+          <select id="provincia" v-model="novoPaciente.provincia" required>
             <option value="">Seleccionar</option>
             <option value="A Coruña">A Coruña</option>
             <option value="Lugo">Lugo</option>
@@ -114,10 +101,7 @@
         </div>
       </div>
 
-      <p
-        v-if="dniComprobado && !dniValido"
-        class="mensaje-dni"
-      >
+      <p v-if="dniComprobado && !dniValido" class="mensaje-dni">
         ⚠️ O DNI introducido non é válido.
       </p>
 
@@ -139,7 +123,7 @@
           novoPaciente.provincia === ''
         "
       >
-        {{ editandoIndex !== null ? 'Actualizar' : 'Gardar' }}
+        {{ editandoIndex !== null ? "Actualizar" : "Gardar" }}
       </button>
     </form>
 
@@ -164,10 +148,7 @@
         </thead>
 
         <tbody>
-          <tr
-            v-for="(u, index) in pacientes"
-            :key="index"
-          >
+          <tr v-for="(u, index) in pacientes" :key="index">
             <td>{{ index + 1 }}</td>
             <td class="dni-tabla">{{ u.dni }}</td>
             <td>{{ u.nome }}</td>
@@ -201,205 +182,199 @@
       </table>
     </div>
 
-    <p v-else>
-      Non hai pacientes cargados.
-    </p>
+    <p v-else>Non hai pacientes cargados.</p>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from "vue";
 
-const pacientes = ref([])
+const pacientes = ref([]);
 
 const novoPaciente = reactive({
-  dni: '',
-  nome: '',
-  apelidos: '',
-  fechaNacimiento: '',
-  correo: '',
-  provincia: '',
-  municipio: '',
-  telefono: '',
-  direccion: '',
+  dni: "",
+  nome: "",
+  apelidos: "",
+  fechaNacimiento: "",
+  correo: "",
+  provincia: "",
+  municipio: "",
+  telefono: "",
+  direccion: "",
   activo: false,
-  tipoCuenta: ''
-})
+  tipoCuenta: "",
+});
 
 // Índice del paciente que estamos editando.
 // null significa que estamos creando uno nuevo.
-const editandoIndex = ref(null)
+const editandoIndex = ref(null);
 
-const dniComprobado = ref(false)
+const dniComprobado = ref(false);
 
 const dniValido = computed(() => {
-  const dni = novoPaciente.dni
-    .trim()
-    .toUpperCase()
+  const dni = novoPaciente.dni.trim().toUpperCase();
 
-  const letras = 'TRWAGMYFPDXBNJZSQVHLCKE'
+  const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
 
   // DNI: 8 números + letra
   if (/^\d{8}[A-Z]$/.test(dni)) {
-    const numero = parseInt(dni.substring(0, 8), 10)
-    const letra = dni.charAt(8)
+    const numero = parseInt(dni.substring(0, 8), 10);
+    const letra = dni.charAt(8);
 
-    return letras[numero % 23] === letra
+    return letras[numero % 23] === letra;
   }
 
   // NIE: X/Y/Z + 7 números + letra
   if (/^[XYZ]\d{7}[A-Z]$/.test(dni)) {
     const prefijo = {
-      X: '0',
-      Y: '1',
-      Z: '2'
-    }
+      X: "0",
+      Y: "1",
+      Z: "2",
+    };
 
-    const numero = prefijo[dni.charAt(0)] + dni.substring(1, 8)
-    const letra = dni.charAt(8)
+    const numero = prefijo[dni.charAt(0)] + dni.substring(1, 8);
+    const letra = dni.charAt(8);
 
-    return letras[parseInt(numero, 10) % 23] === letra
+    return letras[parseInt(numero, 10) % 23] === letra;
   }
 
-  return false
-})
+  return false;
+});
 
 const telefonoValido = computed(() => {
-  const telefono = novoPaciente.telefono.trim()
+  const telefono = novoPaciente.telefono.trim();
 
   // Debe empezar por 6 o 7 y tener exactamente 9 dígitos
-  return /^[67]\d{8}$/.test(telefono)
-})
-
+  return /^[67]\d{8}$/.test(telefono);
+});
 
 // Pacientes de ejemplo
 onMounted(() => {
   pacientes.value = [
     {
-      dni: '12345678Z',
-      nome: 'María',
-      apelidos: 'Pérez García',
-      fechaNacimiento: '1985-03-15',
-      correo: 'maria.perez@email.com',
-      provincia: 'A Coruña',
-      municipio: '',
-      telefono: '600123456',
-      direccion: 'Rúa Real, 15',
+      dni: "12345678Z",
+      nome: "María",
+      apelidos: "Pérez García",
+      fechaNacimiento: "1985-03-15",
+      correo: "maria.perez@email.com",
+      provincia: "A Coruña",
+      municipio: "",
+      telefono: "600123456",
+      direccion: "Rúa Real, 15",
       activo: true,
-      tipoCuenta: 'particular'
+      tipoCuenta: "particular",
     },
     {
-      dni: 'X1234567L',
-      nome: 'Xosé',
-      apelidos: 'López Fernández',
-      fechaNacimiento: '1990-07-22',
-      correo: 'xose.lopez@email.com',
-      provincia: 'Lugo',
-      municipio: '',
-      telefono: '611234567',
-      direccion: 'Rúa Maior, 24',
+      dni: "X1234567L",
+      nome: "Xosé",
+      apelidos: "López Fernández",
+      fechaNacimiento: "1990-07-22",
+      correo: "xose.lopez@email.com",
+      provincia: "Lugo",
+      municipio: "",
+      telefono: "611234567",
+      direccion: "Rúa Maior, 24",
       activo: true,
-      tipoCuenta: 'particular'
+      tipoCuenta: "particular",
     },
     {
-      dni: '87654321X',
-      nome: 'Ana',
-      apelidos: 'Rodríguez Castro',
-      fechaNacimiento: '1978-11-08',
-      correo: 'ana.rodriguez@email.com',
-      provincia: 'Ourense',
-      municipio: '',
-      telefono: '622345678',
-      direccion: 'Avenida Galicia, 8',
+      dni: "87654321X",
+      nome: "Ana",
+      apelidos: "Rodríguez Castro",
+      fechaNacimiento: "1978-11-08",
+      correo: "ana.rodriguez@email.com",
+      provincia: "Ourense",
+      municipio: "",
+      telefono: "622345678",
+      direccion: "Avenida Galicia, 8",
       activo: false,
-      tipoCuenta: 'particular'
+      tipoCuenta: "particular",
     },
     {
-      dni: 'Y1234567X',
-      nome: 'Laura',
-      apelidos: 'Gómez Martínez',
-      fechaNacimiento: '1995-05-30',
-      correo: 'laura.gomez@email.com',
-      provincia: 'Pontevedra',
-      municipio: '',
-      telefono: '633456789',
-      direccion: 'Rúa do Príncipe, 12',
+      dni: "Y1234567X",
+      nome: "Laura",
+      apelidos: "Gómez Martínez",
+      fechaNacimiento: "1995-05-30",
+      correo: "laura.gomez@email.com",
+      provincia: "Pontevedra",
+      municipio: "",
+      telefono: "633456789",
+      direccion: "Rúa do Príncipe, 12",
       activo: true,
-      tipoCuenta: 'particular'
-    }
-  ]
-})
-
+      tipoCuenta: "particular",
+    },
+  ];
+});
 
 // Gardar ou actualizar paciente
 function gardarPaciente() {
   if (!dniValido.value) {
-    dniComprobado.value = true
-    return
+    dniComprobado.value = true;
+    return;
   }
 
   if (editandoIndex.value === null) {
     // Crear paciente nuevo
     pacientes.value.push({
-      ...novoPaciente
-    })
+      ...novoPaciente,
+    });
   } else {
     // Actualizar paciente existente
     pacientes.value[editandoIndex.value] = {
-      ...novoPaciente
-    }
+      ...novoPaciente,
+    };
   }
 
-  limpiarFormulario()
+  limpiarFormulario();
 }
 
 // Limpiar formulario
 function limpiarFormulario() {
   Object.assign(novoPaciente, {
-    dni: '',
-    nome: '',
-    apelidos: '',
-    fechaNacimiento: '',
-    correo: '',
-    provincia: '',
-    municipio: '',
-    telefono: '',
-    direccion: '',
+    dni: "",
+    nome: "",
+    apelidos: "",
+    fechaNacimiento: "",
+    correo: "",
+    provincia: "",
+    municipio: "",
+    telefono: "",
+    direccion: "",
     activo: false,
-    tipoCuenta: ''
-  })
+    tipoCuenta: "",
+  });
 
-  editandoIndex.value = null
-  dniComprobado.value = false
+  editandoIndex.value = null;
+  dniComprobado.value = false;
 }
 
 // Eliminar paciente
 function eliminarPaciente(index) {
-  pacientes.value.splice(index, 1)
+  pacientes.value.splice(index, 1);
 
   // Si estábamos editando ese paciente,
   // limpiamos el formulario
   if (editandoIndex.value === index) {
-    limpiarFormulario()
+    limpiarFormulario();
   }
 }
 
 // Editar paciente
 function editarPaciente(index) {
-  const paciente = pacientes.value[index]
+  const paciente = pacientes.value[index];
 
-  Object.assign(novoPaciente, paciente)
+  Object.assign(novoPaciente, paciente);
 
-  editandoIndex.value = index
+  editandoIndex.value = index;
 
   // Mostrar el estado de validación del DNI
-  dniComprobado.value = true
+  dniComprobado.value = true;
 
   // Llevar el formulario hacia arriba
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
-  })
+    behavior: "smooth",
+  });
 }
 </script>
 
@@ -416,7 +391,7 @@ function editarPaciente(index) {
 }
 
 /* =========================
-   FORMULARIO
+   FORMULARIO LIMPIO
    ========================= */
 
 form {
@@ -427,44 +402,52 @@ form {
   margin-bottom: 2.2rem;
 }
 
+/*
+ * Las 3 filas utilizan exactamente
+ * las mismas columnas.
+ */
 .fila {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
   width: 100%;
 }
 
-/* Segunda fila */
-.fila:nth-of-type(2) {
-  grid-template-columns: 1.4fr 2fr 1fr;
-}
-
-/* Última fila */
-.fila:nth-of-type(3) {
-  grid-template-columns: 2fr 1fr 1fr;
-}
-
+/* Cada grupo ocupa solo el espacio que necesita */
 .campo {
-  display: flex;
+  display: grid;
+  grid-template-columns: 90px 183px;
   align-items: center;
-  gap: 0.6rem;
-  min-width: 0;
+  gap: 0.35rem;
+}
+
+/* Primera columna → izquierda */
+.fila .campo:nth-child(1) {
+  justify-self: start;
+}
+
+/* Segunda columna → centro */
+.fila .campo:nth-child(2) {
+  justify-self: center;
+}
+
+/* Tercera columna → derecha */
+.fila .campo:nth-child(3) {
+  justify-self: end;
 }
 
 .campo label {
-  flex: 0 0 auto;
-  min-width: auto;
+  width: 90px;
   color: #4b5563;
   font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap;
+  text-align: left;
 }
 
 .campo input,
 .campo select {
-  width: 100%;
-  min-width: 0;
-  flex: 1;
+  width: 183px;
   height: 36px;
   padding: 0 0.65rem;
   border: 1px solid #d9dfe3;
@@ -474,7 +457,6 @@ form {
   font-size: 0.88rem;
   box-sizing: border-box;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .campo input:hover,
@@ -538,7 +520,9 @@ form {
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
-  transition: background-color 0.2s ease, transform 0.15s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 }
 
 .btn-guardar:hover:not(:disabled) {
@@ -658,7 +642,9 @@ tbody td:first-child {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .acciones button:hover {
@@ -683,19 +669,19 @@ tbody td:first-child {
     padding: 1.3rem;
   }
 
-  .fila,
-  .fila:nth-of-type(2),
-  .fila:nth-of-type(3) {
+  .fila {
     grid-template-columns: 1fr;
     gap: 0.7rem;
   }
 
   .campo {
+    grid-template-columns: 135px minmax(0, 1fr);
     width: 100%;
   }
 
   .campo label {
-    min-width: 130px;
+    width: 135px;
+    text-align: left;
   }
 
   .campo input,
@@ -703,7 +689,6 @@ tbody td:first-child {
     width: 100%;
   }
 }
-
 @media (max-width: 600px) {
   .xestion-pacientes {
     padding: 1rem;
@@ -711,13 +696,14 @@ tbody td:first-child {
   }
 
   .campo {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0.3rem;
   }
 
   .campo label {
-    min-width: 0;
+    width: auto;
   }
 
   .campo input,

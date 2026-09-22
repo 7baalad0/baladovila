@@ -1,9 +1,9 @@
 <template>
   <footer class="footer-content footer">
     <ul class="link-aviso">
-     <router-link to="/avisolegal" target="_blank" >Aviso Legal</router-link>
+     <router-link to="/avisolegal" target="blank" >Aviso Legal</router-link>
     </ul>
-     <p>© {{ new Date().getFullYear() }} XestiónApp — Desenvolvido en Vue 3</p>
+     <p>© {{ new Date().getFullYear() }} Sanidad Teis — Desenvolvido en Vue 3</p>
   </footer>
 </template>
 
@@ -11,7 +11,7 @@
 
 <style scoped>
 .footer {
-  background: #1b4965;
+  background: #027951;
   color: white;
   text-align: center;
   padding: 0.2rem 6rem;

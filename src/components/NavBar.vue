@@ -8,16 +8,17 @@
     <!-- MODIFICADO -->
     <ul :class="['menu', { open: isOpen }]">
       <li><RouterLink to="/">Inicio</RouterLink></li>
-      <li><RouterLink to="/usuarios">Usuarios</RouterLink></li>
-      <li><RouterLink to="/tarefas">Tarefas</RouterLink></li>
-      <li><RouterLink to="/sobrenos">Sobre nós</RouterLink></li>
+      <li>
+        <RouterLink to="/XestionPacientes">Xestion de Pacientes</RouterLink>
+      </li>
+      <li><RouterLink to="/SobreNos">Sobre nós</RouterLink></li>
     </ul>
   </nav>
 </template>
 
 <script setup>
-import { ref } from "vue" // será boolean
-const isOpen = ref(false) // actívase cuando fago click
+import { ref } from "vue"; // será boolean
+const isOpen = ref(false); // actívase cuando fago click
 </script>
 
 <style scoped>
@@ -26,7 +27,7 @@ const isOpen = ref(false) // actívase cuando fago click
   justify-content: space-between;
   align-items: center;
   padding: 0.1rem 6rem;
-  background: #1b4965;
+  background: #027951;
   color: white;
 }
 
@@ -48,7 +49,7 @@ const isOpen = ref(false) // actívase cuando fago click
 }
 
 .menu a.router-link-active {
-  border-bottom: 0.2rem solid #ffe66d;
+  border-bottom: 0.2rem solid #72ff6d;
 }
 
 /* NUEVO */
