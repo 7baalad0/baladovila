@@ -49,7 +49,7 @@ const isOpen = ref(false); // actívase cuando fago click
 }
 
 .menu a.router-link-active {
-  border-bottom: 0.2rem solid #72ff6d;
+  border-bottom: 0.2rem solid #87e474;
 }
 
 /* NUEVO */

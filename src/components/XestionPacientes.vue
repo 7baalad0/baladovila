@@ -80,12 +80,20 @@
 
         <div class="campo campo-provincia">
           <label for="provincia">Provincia:</label>
-          <select id="provincia" v-model="novoPaciente.provincia" required>
+          <select
+            id="provincia"
+            v-model="novoPaciente.provincia"
+            @change="cargarMunicipios"
+            required
+          >
             <option value="">Seleccionar</option>
-            <option value="A Coruña">A Coruña</option>
-            <option value="Lugo">Lugo</option>
-            <option value="Ourense">Ourense</option>
-            <option value="Pontevedra">Pontevedra</option>
+            <option
+              v-for="provincia in provincias"
+              :key="provincia.id"
+              :value="provincia.id"
+            >
+              {{ provincia.nm }}
+            </option>
           </select>
         </div>
 
@@ -97,6 +105,13 @@
             :disabled="!novoPaciente.provincia"
           >
             <option value="">Seleccionar</option>
+            <option
+              v-for="municipio in municipios"
+              :key="municipio.id"
+              :value="municipio.id"
+            >
+              {{ municipio.nm }}
+            </option>
           </select>
         </div>
       </div>
@@ -188,8 +203,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
+import { obtenerProvincias } from "../api/municipios.js";
+import { obtenerMunicipios } from "../api/municipios.js";
 
 const pacientes = ref([]);
+
+const provincias = ref([]);
+const municipios = ref([]);
 
 const novoPaciente = reactive({
   dni: "",
@@ -249,7 +269,7 @@ const telefonoValido = computed(() => {
 });
 
 // Pacientes de ejemplo
-onMounted(() => {
+onMounted(async () => {
   pacientes.value = [
     {
       dni: "12345678Z",
@@ -304,7 +324,18 @@ onMounted(() => {
       tipoCuenta: "particular",
     },
   ];
+
+  provincias.value = await obtenerProvincias();
 });
+
+async function cargarMunicipios() {
+  if (novoPaciente.provincia === "") {
+    municipios.value = [];
+    return;
+  }
+
+  municipios.value = await obtenerMunicipios(novoPaciente.provincia);
+}
 
 // Gardar ou actualizar paciente
 function gardarPaciente() {

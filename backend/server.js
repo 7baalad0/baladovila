@@ -4,6 +4,7 @@ import cors from "cors";
 
 const app = express();
 app.use(cors());
+const PORT = 3000;
 
 app.get("/api/municipios", (req, res) => {
   console.log("Received request for municipios");
@@ -15,6 +16,6 @@ app.get("/api/municipios", (req, res) => {
   res.json(datosJson);
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
