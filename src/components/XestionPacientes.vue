@@ -110,7 +110,7 @@
               :key="municipio.id"
               :value="municipio.id"
             >
-              {{ municipio.nm }}1
+              {{ municipio.nm }}
             </option>
           </select>
         </div>
