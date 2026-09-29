@@ -134,7 +134,7 @@
           novoPaciente.dni === '' ||
           novoPaciente.nome === '' ||
           !dniValido ||
-          !telefonoValido ||
+          (novoPaciente.telefono !== '' && !telefonoValido) ||
           novoPaciente.provincia === ''
         "
       >
@@ -203,9 +203,13 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
-import { obtenerProvincias } from "../api/municipios.js";
-import { obtenerMunicipios } from "../api/municipios.js";
-
+import { obtenerProvincias, obtenerMunicipios } from "../api/municipios.js";
+import {
+  savePacientes,
+  getPacientes,
+  updatePaciente,
+  deletePaciente
+} from "../api/pacientes.js";
 const pacientes = ref([]);
 
 const provincias = ref([]);
@@ -217,12 +221,10 @@ const novoPaciente = reactive({
   apelidos: "",
   fechaNacimiento: "",
   correo: "",
-  provincia: "",
-  municipio: "",
   telefono: "",
   direccion: "",
-  activo: false,
-  tipoCuenta: "",
+  provincia: "",
+  municipio: ""
 });
 
 // Índice del paciente que estamos editando.
@@ -268,64 +270,9 @@ const telefonoValido = computed(() => {
   return /^[67]\d{8}$/.test(telefono);
 });
 
-// Pacientes de ejemplo
 onMounted(async () => {
-  pacientes.value = [
-    {
-      dni: "12345678Z",
-      nome: "María",
-      apelidos: "Pérez García",
-      fechaNacimiento: "1985-03-15",
-      correo: "maria.perez@email.com",
-      provincia: "A Coruña",
-      municipio: "",
-      telefono: "600123456",
-      direccion: "Rúa Real, 15",
-      activo: true,
-      tipoCuenta: "particular",
-    },
-    {
-      dni: "X1234567L",
-      nome: "Xosé",
-      apelidos: "López Fernández",
-      fechaNacimiento: "1990-07-22",
-      correo: "xose.lopez@email.com",
-      provincia: "Lugo",
-      municipio: "",
-      telefono: "611234567",
-      direccion: "Rúa Maior, 24",
-      activo: true,
-      tipoCuenta: "particular",
-    },
-    {
-      dni: "87654321X",
-      nome: "Ana",
-      apelidos: "Rodríguez Castro",
-      fechaNacimiento: "1978-11-08",
-      correo: "ana.rodriguez@email.com",
-      provincia: "Ourense",
-      municipio: "",
-      telefono: "622345678",
-      direccion: "Avenida Galicia, 8",
-      activo: false,
-      tipoCuenta: "particular",
-    },
-    {
-      dni: "Y1234567X",
-      nome: "Laura",
-      apelidos: "Gómez Martínez",
-      fechaNacimiento: "1995-05-30",
-      correo: "laura.gomez@email.com",
-      provincia: "Pontevedra",
-      municipio: "",
-      telefono: "633456789",
-      direccion: "Rúa do Príncipe, 12",
-      activo: true,
-      tipoCuenta: "particular",
-    },
-  ];
-
   provincias.value = await obtenerProvincias();
+  pacientes.value = await getPacientes();
 });
 
 async function cargarMunicipios() {
@@ -337,26 +284,39 @@ async function cargarMunicipios() {
   municipios.value = await obtenerMunicipios(novoPaciente.provincia);
 }
 
-// Gardar ou actualizar paciente
-function gardarPaciente() {
-  if (!dniValido.value) {
-    dniComprobado.value = true;
-    return;
-  }
+async function gardarPaciente() {
+  try {
+    const provincia = provincias.value.find(
+      (p) => String(p.id) === String(novoPaciente.provincia)
+    );
 
-  if (editandoIndex.value === null) {
-    // Crear paciente nuevo
-    pacientes.value.push({
+    const municipio = municipios.value.find(
+      (m) => String(m.id) === String(novoPaciente.municipio)
+    );
+
+    const paciente = {
       ...novoPaciente,
-    });
-  } else {
-    // Actualizar paciente existente
-    pacientes.value[editandoIndex.value] = {
-      ...novoPaciente,
+      provincia: provincia.nm,
+      municipio: municipio.nm
     };
-  }
 
-  limpiarFormulario();
+    if (editandoIndex.value === null) {
+      await savePacientes(paciente);
+    } else {
+      const pacienteActual = pacientes.value[editandoIndex.value];
+
+      await updatePaciente(pacienteActual.id, paciente);
+    }
+
+    // La tabla se carga SIEMPRE desde MongoDB
+    pacientes.value = await getPacientes();
+
+    limpiarFormulario();
+
+    console.log("Paciente gardado correctamente");
+  } catch (error) {
+    console.error("Error ao gardar paciente:", error);
+  }
 }
 
 // Limpiar formulario
@@ -367,26 +327,29 @@ function limpiarFormulario() {
     apelidos: "",
     fechaNacimiento: "",
     correo: "",
-    provincia: "",
-    municipio: "",
     telefono: "",
     direccion: "",
-    activo: false,
-    tipoCuenta: "",
+    provincia: "",
+    municipio: ""
   });
 
   editandoIndex.value = null;
   dniComprobado.value = false;
 }
 
-// Eliminar paciente
-function eliminarPaciente(index) {
-  pacientes.value.splice(index, 1);
+async function eliminarPaciente(index) {
+  try {
+    const paciente = pacientes.value[index];
 
-  // Si estábamos editando ese paciente,
-  // limpiamos el formulario
-  if (editandoIndex.value === index) {
-    limpiarFormulario();
+    await deletePaciente(paciente.id);
+
+    pacientes.value = await getPacientes();
+
+    if (editandoIndex.value === index) {
+      limpiarFormulario();
+    }
+  } catch (error) {
+    console.error("Error ao eliminar paciente:", error);
   }
 }
 
@@ -408,6 +371,8 @@ function editarPaciente(index) {
   });
 }
 </script>
+
+
 
 <style scoped>
 .xestion-pacientes {

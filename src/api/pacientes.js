@@ -2,20 +2,36 @@ import axios from "axios";
 
 const URL = "http://localhost:3000/api/pacientes";
 
-export async function guardarPacientes(formData) {
-    const res = await axios.post(API_URL, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
+export async function getPacientes() {
+  const respuesta = await axios.get(URL);
 
-    return res.data;
-        }
+  return respuesta.data.map((p) => ({
+    dni: p.dnipac,
+    nome: p.nomepac,
+    apelidos: p.apelpac,
+    fechaNacimiento: p.nacipac,
+    correo: p.mailpac,
+    telefono: p.movilpac,
+    direccion: p.dirpac,
+    provincia: p.propac,
+    municipio: p.munipac
+  }));
+}
 
+export async function savePacientes(paciente) {
+  const respuesta = await axios.post(URL, paciente);
 
+  const p = respuesta.data;
 
-
-export async function obtenerPacientes() {
-    const res = await axios.get(API_URL);
-    return res.data;
+  return {
+    dni: p.dnipac,
+    nome: p.nomepac,
+    apelidos: p.apelpac,
+    fechaNacimiento: p.nacipac,
+    correo: p.mailpac,
+    telefono: p.movilpac,
+    direccion: p.dirpac,
+    provincia: p.propac,
+    municipio: p.munipac
+  };
 }
