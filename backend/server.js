@@ -36,8 +36,9 @@ app.get("/api/municipios", (req, res) => {
 async function iniciaServer(){
     try{
       //conectamos con mongodb
-      await  mongoose.connect(MONGO_URI);
+      await  mongoose.connect(MONGO_URI, {dbName: "bbdd"});
       console.log("Conectado a MongoDB");
+      console.log("Base de datos:", mongoose.connection.db.databaseName);
       app.listen(PORT, () => {
       console.log(`Servidor funcionando en http://localhost:${PORT}`);
         });

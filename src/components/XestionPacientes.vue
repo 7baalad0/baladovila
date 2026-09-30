@@ -127,19 +127,39 @@
         ⚠️ O teléfono debe comezar por 6 ou 7 e ter 9 díxitos.
       </p>
 
-      <button
-        type="submit"
-        class="btn-guardar"
-        :disabled="
-          novoPaciente.dni === '' ||
-          novoPaciente.nome === '' ||
-          !dniValido ||
-          (novoPaciente.telefono !== '' && !telefonoValido) ||
-          novoPaciente.provincia === ''
-        "
-      >
-        {{ editandoIndex !== null ? "Actualizar" : "Gardar" }}
-      </button>
+<div class="botones-formulario">
+  <button
+    type="submit"
+    class="btn-guardar"
+    :disabled="
+      novoPaciente.dni === '' ||
+      novoPaciente.nome === '' ||
+      !dniValido ||
+      (novoPaciente.telefono !== '' && !telefonoValido) ||
+      novoPaciente.provincia === ''
+    "
+  >
+    {{ editandoIndex !== null ? "Actualizar" : "Gardar" }}
+  </button>
+
+  <button
+    v-if="editandoIndex !== null"
+    type="button"
+    class="btn-cancelar"
+    @click="limpiarFormulario"
+  >
+    Cancelar
+  </button>
+
+  <button
+    v-else
+    type="button"
+    class="btn-vaciar"
+    @click="limpiarFormulario"
+  >
+    Vaciar formulario
+  </button>
+</div>
     </form>
 
     <h4>📋 Listaxe de pacientes</h4>
@@ -354,17 +374,33 @@ async function eliminarPaciente(index) {
 }
 
 // Editar paciente
-function editarPaciente(index) {
+async function editarPaciente(index) {
   const paciente = pacientes.value[index];
 
   Object.assign(novoPaciente, paciente);
 
+  const provincia = provincias.value.find(
+    (p) => p.nm === paciente.provincia
+  );
+
+  if (provincia) {
+    novoPaciente.provincia = provincia.id;
+
+    municipios.value = await obtenerMunicipios(provincia.id);
+
+    const municipio = municipios.value.find(
+      (m) => m.nm === paciente.municipio
+    );
+
+    if (municipio) {
+      novoPaciente.municipio = municipio.id;
+    }
+  }
+
   editandoIndex.value = index;
 
-  // Mostrar el estado de validación del DNI
   dniComprobado.value = true;
 
-  // Llevar el formulario hacia arriba
   window.scrollTo({
     top: 0,
     behavior: "smooth",
@@ -536,7 +572,33 @@ form {
   opacity: 0.65;
   cursor: not-allowed;
 }
+.botones-formulario {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.4rem;
+}
 
+.btn-cancelar,
+.btn-vaciar {
+  min-width: 90px;
+  height: 32px;
+  padding: 0 1rem;
+  background-color: #f8d7d7;
+  color: #9b4f4f;
+  border: 1px solid #edbaba;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-cancelar:hover,
+.btn-vaciar:hover {
+  background-color: #f2c4c4;
+  border-color: #e3a3a3;
+}
 /* =========================
    TÍTULOS
    ========================= */
