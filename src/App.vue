@@ -22,9 +22,6 @@ import FooTer from './components/FooTer.vue'
   max-width: 80vw;
   min-height: 100vh;
   margin: 0 auto;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-
   display: flex;
   flex-direction: column;
 }

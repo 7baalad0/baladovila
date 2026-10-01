@@ -157,7 +157,7 @@
     class="btn-vaciar"
     @click="limpiarFormulario"
   >
-    Vaciar formulario
+    Vaciar
   </button>
 </div>
     </form>
@@ -171,13 +171,8 @@
             <th>#</th>
             <th>DNI/CIF</th>
             <th>Nome</th>
-            <th>Apelidos</th>
-            <th>Fecha Nacimiento</th>
             <th>Correo</th>
-            <th>Telefono</th>
-            <th>Dirección</th>
             <th>Provincia</th>
-            <th>Municipio</th>
             <th>Accións</th>
           </tr>
         </thead>
@@ -187,13 +182,9 @@
             <td>{{ index + 1 }}</td>
             <td class="dni-tabla">{{ u.dni }}</td>
             <td>{{ u.nome }}</td>
-            <td>{{ u.apelidos }}</td>
-            <td>{{ u.fechaNacimiento }}</td>
             <td>{{ u.correo }}</td>
-            <td>{{ u.telefono }}</td>
-            <td>{{ u.direccion }}</td>
             <td>{{ u.provincia }}</td>
-            <td>{{ u.municipio }}</td>
+
 
             <td class="acciones">
               <button
@@ -620,20 +611,55 @@ h4 {
 
 .tabla-contenedor {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   border: 1px solid #e1e5e8;
   border-radius: 6px;
 }
 
 table {
   width: 100%;
-  min-width: 1100px;
+  min-width: 0;
   border-collapse: collapse;
   margin: 0;
   font-size: 0.82rem;
   background: white;
+  table-layout: fixed;
 }
 
+/* Tamaño de las columnas */
+th:nth-child(1),
+td:nth-child(1) {
+  width: 5%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 13%;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 12%;
+}
+
+/* Correo: más espacio */
+th:nth-child(4),
+td:nth-child(4) {
+  width: 28%;
+  white-space: nowrap;
+}
+
+/* Provincia */
+th:nth-child(5),
+td:nth-child(5) {
+  width: 18%;
+}
+
+/* Accións */
+th:nth-child(6),
+td:nth-child(6) {
+  width: 14%;
+}
 /* Cabecera */
 th {
   padding: 0.75rem 0.6rem;
@@ -652,6 +678,12 @@ td {
   border-bottom: 1px solid #edf0ee;
   color: #59636b;
   vertical-align: middle;
+}
+
+th,
+td {
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 /* Quitar borde de la última fila */
