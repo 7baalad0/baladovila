@@ -127,6 +127,24 @@
         ⚠️ O teléfono debe comezar por 6 ou 7 e ter 9 díxitos.
       </p>
 
+<div v-if="editandoIndex === null" class="politica">
+  <label>
+    <input
+      type="checkbox"
+      v-model="politicaAceptada"
+      @change="errorPolitica = false"
+    />
+    Acepto la
+    <RouterLink to="/politica-privacidad">
+      política de privacidad
+    </RouterLink>
+  </label>
+
+  <p v-if="errorPolitica" class="mensaje-politica">
+    ⚠️ Debes aceptar la política de privacidad para continuar.
+  </p>
+</div>
+
 <div class="botones-formulario">
   <button
     type="submit"
@@ -244,6 +262,10 @@ const editandoIndex = ref(null);
 
 const dniComprobado = ref(false);
 
+const politicaAceptada = ref(false);
+
+const errorPolitica = ref(false);
+
 const dniValido = computed(() => {
   const dni = novoPaciente.dni.trim().toUpperCase();
 
@@ -296,6 +318,10 @@ async function cargarMunicipios() {
 }
 
 async function gardarPaciente() {
+  if (editandoIndex.value === null && !politicaAceptada.value) {
+    errorPolitica.value = true;
+    return;
+  }
   try {
     const provincia = provincias.value.find(
       (p) => String(p.id) === String(novoPaciente.provincia)
@@ -346,6 +372,8 @@ function limpiarFormulario() {
 
   editandoIndex.value = null;
   dniComprobado.value = false;
+  politicaAceptada.value = false;
+  errorPolitica.value = false;
 }
 
 async function eliminarPaciente(index) {
@@ -391,6 +419,7 @@ async function editarPaciente(index) {
   editandoIndex.value = index;
 
   dniComprobado.value = true;
+
 
   window.scrollTo({
     top: 0,
@@ -530,6 +559,34 @@ form {
 /* =========================
    BOTÓN GUARDAR
    ========================= */
+
+
+  .politica {
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
+
+.politica label {
+  color: #59636b;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.politica input {
+  margin-right: 0.4rem;
+  cursor: pointer;
+}
+
+.politica a {
+  color: #4b8f3c;
+  text-decoration: underline;
+}
+
+.mensaje-politica {
+  margin-top: 0.35rem;
+  color: #c0392b;
+  font-size: 0.8rem;
+}
 
 .btn-guardar {
   align-self: center;
