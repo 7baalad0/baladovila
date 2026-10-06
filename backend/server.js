@@ -6,11 +6,13 @@ import mongoose from "mongoose";
 
 
 import pacientesRutas from './rutas/pacientes.rutas.js'; //importa el modelo de paciente
+import doctoresRutas from './rutas/doctores.rutas.js'; //importa el modelo de doctor
 // Creamos la aplicación Express
 const app = express();
 app.use(cors());
 app.use(express.json()); //para que pueda leer json
 app.use('/api/pacientes', pacientesRutas); //usa el modelo de paciente
+app.use('/api/doctores', doctoresRutas); //usa el modelo de doctor
 //USA EL PUERTO definido en la variables de entorno y si no coge el 3000
 const PORT = process.env.PORT || 3000;
 
@@ -30,6 +32,21 @@ app.get("/api/municipios", (req, res) => {
   // Enviamos los datos como respuesta al cliente
   res.json(datosJson);
 });
+
+
+// Ruta de la API para obtener provincias y municipios
+app.get("/api/especialidades", (req, res) => {
+  
+  // Leemos el fichero JSON
+  const datos = fs.readFileSync("./backend/data/especialidades.json", "utf8");
+
+  // Convertimos el texto JSON en un objeto JavaScript
+  const datosJson = JSON.parse(datos);
+
+  // Enviamos los datos como respuesta al cliente
+  res.json(datosJson);
+});
+
 
 // Ponemos el servidor a escuchar en el puerto 3000
 

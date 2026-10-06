@@ -22,7 +22,11 @@
               dniComprobado = true;
             "
           />
+
         </div>
+
+
+
 
         <div class="campo campo-nome">
           <label for="nome">Nome:</label>
@@ -177,6 +181,16 @@
   >
     Vaciar
   </button>
+                                         <button
+    type="button"
+    class="btn-buscar"
+    @click="buscarPaciente"
+    title="Buscar paciente por DNI"
+  >
+    🔍
+  </button>
+
+
 </div>
     </form>
 
@@ -426,6 +440,29 @@ async function editarPaciente(index) {
     behavior: "smooth",
   });
 }
+async function buscarPaciente() {
+  const dni = novoPaciente.dni.trim().toUpperCase();
+
+  // Comprobar que el DNI sea válido
+  if (!dniValido.value) {
+    dniComprobado.value = true;
+    return;
+  }
+
+  // Buscar paciente por DNI
+  const index = pacientes.value.findIndex(
+    (paciente) => paciente.dni.toUpperCase() === dni
+  );
+
+  // Si no existe
+  if (index === -1) {
+    alert("No existe ningún paciente con ese DNI.");
+    return;
+  }
+
+  // Si existe, cargar sus datos
+  await editarPaciente(index);
+}
 </script>
 
 
@@ -646,6 +683,32 @@ form {
 .btn-vaciar:hover {
   background-color: #f2c4c4;
   border-color: #e3a3a3;
+}
+
+.btn-buscar {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  margin-left: 0.4rem;
+  background-color: #f4f4f4;
+  color: #59636b;
+  border: 1px solid #d9dfe3;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-buscar:hover {
+  background-color: #e9e9e9;
+  border-color: #b8c2c8;
+}
+
+.mensaje-busqueda {
+  margin: -0.3rem 0 0.5rem;
+  color: #c0392b;
+  font-size: 0.8rem;
+  text-align: center;
 }
 /* =========================
    TÍTULOS

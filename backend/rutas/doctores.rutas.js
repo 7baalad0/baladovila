@@ -1,64 +1,64 @@
 import express from 'express';
-import Paciente from '../modelos/Paciente.js';
+import Doctor from '../modelos/Doctor.js';
 
 const router = express.Router();
 
-// Obtener pacientes
+// Obtener doctores
 router.get('/', async (req, res) => {
     try {
-        const pacientes = await Paciente.find();
-        res.json(pacientes);
+        const doctores = await Doctor.find();
+        res.json(doctores);
     } catch (error) {
-        console.error("Error al obtener pacientes:", error);
+        console.error("Error al obtener doctores:", error);
         res.status(500).json({
-            mensaje: "Error al obtener pacientes"
+            mensaje: "Error al obtener doctores"
         });
     }
 });
 
-// Buscar paciente por DNI
+// Buscar doctor por DNI
 router.get('/dni/:dni', async (req, res) => {
     try {
         const dni = req.params.dni.trim().toUpperCase();
 
-        const paciente = await Paciente.findOne({
+        const doctor = await Doctor.findOne({
             dnipac: dni
         });
 
-        if (!paciente) {
+        if (!doctor) {
             return res.status(404).json({
-                mensaje: "Non existe ningún paciente con ese DNI"
+                mensaje: "Non existe ningún doctor con ese DNI"
             });
         }
 
-        res.json(paciente);
+        res.json(doctor);
 
     } catch (error) {
-        console.error("Error al buscar paciente:", error);
+        console.error("Error al buscar doctor:", error);
         res.status(500).json({
-            mensaje: "Error al buscar paciente"
+            mensaje: "Error al buscar doctor"
         });
     }
 });
 
-// Crear paciente
+// Crear doctor
 router.post('/', async (req, res) => {
     try {
         console.log("Datos recibidos:", req.body);
 
-        // Verificar si ya existe un paciente con el mismo DNI
-        const pacienteExistente = await Paciente.findOne({
+        // Verificar si ya existe un doctor con el mismo DNI
+        const doctorExistente = await Doctor.findOne({
             dnipac: req.body.dni.trim().toUpperCase()
         });
 
-        if (pacienteExistente) {
+        if (doctorExistente) {
             return res.status(409).json({
-                mensaje: "Ya existe un paciente con el mismo DNI"
+                mensaje: "Ya existe un doctor con el mismo DNI"
             });
         }
 
-        // Si no existe, crear el paciente
-        const paciente = new Paciente({
+        // Si no existe, crear el doctor
+        const doctor = new Doctor({
             dnipac: req.body.dni.trim().toUpperCase(),
             nomepac: req.body.nome,
             apelpac: req.body.apelidos,
@@ -70,34 +70,34 @@ router.post('/', async (req, res) => {
             munipac: req.body.municipio
         });
 
-        const nuevoPaciente = await paciente.save();
+        const nuevoDoctor = await doctor.save();
 
-        res.status(201).json(nuevoPaciente);
+        res.status(201).json(nuevoDoctor);
 
     } catch (error) {
-        console.error("Error al crear paciente:", error);
+        console.error("Error al crear doctor:", error);
         res.status(500).json({
-            mensaje: "Error al crear paciente"
+            mensaje: "Error al crear doctor"
         });
     }
 });
 
-// Actualizar paciente
+// Actualizar doctor
 router.put('/:id', async (req, res) => {
     try {
-        // Comprobar si el DNI ya pertenece a otro paciente
-        const pacienteExistente = await Paciente.findOne({
+        // Comprobar si el DNI ya pertenece a otro doctor
+        const doctorExistente = await Doctor.findOne({
             dnipac: req.body.dni.trim().toUpperCase(),
             _id: { $ne: req.params.id }
         });
 
-        if (pacienteExistente) {
+        if (doctorExistente) {
             return res.status(409).json({
-                mensaje: "Ya existe otro paciente con el mismo DNI"
+                mensaje: "Ya existe otro doctor con el mismo DNI"
             });
         }
 
-        const paciente = await Paciente.findByIdAndUpdate(
+        const doctor = await Doctor.findByIdAndUpdate(
             req.params.id,
             {
                 dnipac: req.body.dni.trim().toUpperCase(),
@@ -116,29 +116,29 @@ router.put('/:id', async (req, res) => {
             }
         );
 
-        res.json(paciente);
+        res.json(doctor);
 
     } catch (error) {
-        console.error("Error al actualizar paciente:", error);
+        console.error("Error al actualizar doctor:", error);
         res.status(500).json({
-            mensaje: "Error al actualizar paciente"
+            mensaje: "Error al actualizar doctor"
         });
     }
 });
 
-// Eliminar paciente
+// Eliminar doctor
 router.delete('/:id', async (req, res) => {
     try {
-        await Paciente.findByIdAndDelete(req.params.id);
+        await Doctor.findByIdAndDelete(req.params.id);
 
         res.json({
-            mensaje: "Paciente eliminado correctamente"
+            mensaje: "Doctor eliminado correctamente"
         });
 
     } catch (error) {
-        console.error("Error al eliminar paciente:", error);
+        console.error("Error al eliminar doctor:", error);
         res.status(500).json({
-            mensaje: "Error al eliminar paciente"
+            mensaje: "Error al eliminar doctor"
         });
     }
 });
