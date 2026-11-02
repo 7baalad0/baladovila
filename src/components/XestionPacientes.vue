@@ -253,6 +253,12 @@ import {
   updatePaciente,
   deletePaciente
 } from "../api/pacientes.js";
+
+import { alertaExito,
+        alertaError,
+        alertaConfirmacion
+ } from "../utils/alertas.js";
+
 const pacientes = ref([]);
 
 const provincias = ref([]);
@@ -352,11 +358,21 @@ async function gardarPaciente() {
     };
 
     if (editandoIndex.value === null) {
+      
       await savePacientes(paciente);
+      alertaExito("El paciente se ha guardado correctamente")
     } else {
-      const pacienteActual = pacientes.value[editandoIndex.value];
 
+
+      const respuesta = await alertaConfirmacion(" Seguro que quieres editar?");
+      if (respuesta.isConfirmed){
+      const pacienteActual = pacientes.value[editandoIndex.value];
+      
       await updatePaciente(pacienteActual.id, paciente);
+      alertaExito("Paciente actualizado correctamente")
+      } else {
+        return;
+      }
     }
 
     // La tabla se carga SIEMPRE desde MongoDB
@@ -367,7 +383,9 @@ async function gardarPaciente() {
     console.log("Paciente gardado correctamente");
   } catch (error) {
     console.error("Error ao gardar paciente:", error);
+    alertaError("Error al guardar")
   }
+  
 }
 
 // Limpiar formulario
@@ -392,18 +410,29 @@ function limpiarFormulario() {
 
 async function eliminarPaciente(index) {
   try {
+    const confirmacion = await alertaConfirmacion(
+      "¿Seguro que quieres eliminar?"
+    );
+
+    if (confirmacion.isConfirmed){
     const paciente = pacientes.value[index];
 
     await deletePaciente(paciente.id);
 
     pacientes.value = await getPacientes();
-
+      alertaExito("Paciente eliminado correctamente")
     if (editandoIndex.value === index) {
       limpiarFormulario();
     }
-  } catch (error) {
-    console.error("Error ao eliminar paciente:", error);
+  } else {
+   
+    return;
   }
+}catch (error) {
+    console.error("Error ao eliminar paciente:", error);
+    alertaError("Error al eliminar el paciente")
+  }
+
 }
 
 // Editar paciente

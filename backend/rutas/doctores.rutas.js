@@ -1,146 +1,120 @@
-import express from 'express';
-import Doctor from '../modelos/Doctor.js';
+import express from "express";
+import Doctor from "../modelos/Doctor.js";
+import especialidadesData from "../data/especialidades.json" with { type: "json" };
 
 const router = express.Router();
 
-// Obtener doctores
-router.get('/', async (req, res) => {
-    try {
-        const doctores = await Doctor.find();
-        res.json(doctores);
-    } catch (error) {
-        console.error("Error al obtener doctores:", error);
-        res.status(500).json({
-            mensaje: "Error al obtener doctores"
-        });
-    }
+
+// Obtener todos
+router.get("/", async (req, res) => {
+  try {
+    const doctores = await Doctor.find();
+
+    console.log("Doctores obtenidos:", doctores);
+
+    res.json(doctores);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener doctores",
+    });
+  }
 });
 
-// Buscar doctor por DNI
-router.get('/dni/:dni', async (req, res) => {
-    try {
-        const dni = req.params.dni.trim().toUpperCase();
+// Obtener las especialidades del JSON
+// Esta ruta debe ir antes de /:especialidad.
+router.get("/especialidades", (req, res) => {
+  res.json(especialidadesData.especialidades);
+});
 
-        const doctor = await Doctor.findOne({
-            dnipac: dni
-        });
+// Obtener doctores por especialidad
+router.get("/:especialidad", async (req, res) => {
+  try {
+    const doctores = await Doctor.find({
+      espedoc: req.params.especialidad,
+    });
 
-        if (!doctor) {
-            return res.status(404).json({
-                mensaje: "Non existe ningún doctor con ese DNI"
-            });
-        }
-
-        res.json(doctor);
-
-    } catch (error) {
-        console.error("Error al buscar doctor:", error);
-        res.status(500).json({
-            mensaje: "Error al buscar doctor"
-        });
-    }
+    res.json(doctores);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener doctores",
+    });
+  }
 });
 
 // Crear doctor
-router.post('/', async (req, res) => {
-    try {
-        console.log("Datos recibidos:", req.body);
+router.post("/", async (req, res) => {
+  try {
+    const doctor = new Doctor({
+      nomedoc: req.body.nomedoc,
+      apeldoc: req.body.apeldoc,
+      coledoc: req.body.coledoc,
+      movildoc: req.body.movildoc,
+      maildoc: req.body.maildoc,
+      espedoc: req.body.espedoc
+    });
 
-        // Verificar si ya existe un doctor con el mismo DNI
-        const doctorExistente = await Doctor.findOne({
-            dnipac: req.body.dni.trim().toUpperCase()
-        });
+    const nuevoDoctor = await doctor.save();
 
-        if (doctorExistente) {
-            return res.status(409).json({
-                mensaje: "Ya existe un doctor con el mismo DNI"
-            });
-        }
+    res.status(201).json(nuevoDoctor);
+  } catch (error) {
+    console.error("ERROR AL CREAR DOCTOR:", error);
 
-        // Si no existe, crear el doctor
-        const doctor = new Doctor({
-            dnipac: req.body.dni.trim().toUpperCase(),
-            nomepac: req.body.nome,
-            apelpac: req.body.apelidos,
-            nacipac: req.body.fechaNacimiento,
-            mailpac: req.body.correo,
-            movilpac: req.body.telefono,
-            dirpac: req.body.direccion,
-            propac: req.body.provincia,
-            munipac: req.body.municipio
-        });
-
-        const nuevoDoctor = await doctor.save();
-
-        res.status(201).json(nuevoDoctor);
-
-    } catch (error) {
-        console.error("Error al crear doctor:", error);
-        res.status(500).json({
-            mensaje: "Error al crear doctor"
-        });
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        mensaje: "Datos incorrectos: " + error.message
+      });
     }
+
+    res.status(500).json({
+      mensaje: "Error al crear el doctor"
+    });
+  }
 });
 
-// Actualizar doctor
-router.put('/:id', async (req, res) => {
-    try {
-        // Comprobar si el DNI ya pertenece a otro doctor
-        const doctorExistente = await Doctor.findOne({
-            dnipac: req.body.dni.trim().toUpperCase(),
-            _id: { $ne: req.params.id }
-        });
+// Modificar doctor
+router.put("/:id", async (req, res) => {
+  try {
+    const doctor = await Doctor.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body,
+      { new: true },
+    );
 
-        if (doctorExistente) {
-            return res.status(409).json({
-                mensaje: "Ya existe otro doctor con el mismo DNI"
-            });
-        }
-
-        const doctor = await Doctor.findByIdAndUpdate(
-            req.params.id,
-            {
-                dnipac: req.body.dni.trim().toUpperCase(),
-                nomepac: req.body.nome,
-                apelpac: req.body.apelidos,
-                nacipac: req.body.fechaNacimiento,
-                mailpac: req.body.correo,
-                movilpac: req.body.telefono,
-                dirpac: req.body.direccion,
-                propac: req.body.provincia,
-                munipac: req.body.municipio
-            },
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-
-        res.json(doctor);
-
-    } catch (error) {
-        console.error("Error al actualizar doctor:", error);
-        res.status(500).json({
-            mensaje: "Error al actualizar doctor"
-        });
+    if (!doctor) {
+      return res.status(404).json({
+        mensaje: "Doctor no encontrado",
+      });
     }
+
+    res.json(doctor);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al modificar el doctor",
+    });
+  }
 });
 
-// Eliminar doctor
-router.delete('/:id', async (req, res) => {
-    try {
-        await Doctor.findByIdAndDelete(req.params.id);
+// Eliminar
+router.delete("/:id", async (req, res) => {
+  try {
+    const doctor = await Doctor.findOneAndDelete({
+      _id: req.params.id,
+    });
 
-        res.json({
-            mensaje: "Doctor eliminado correctamente"
-        });
-
-    } catch (error) {
-        console.error("Error al eliminar doctor:", error);
-        res.status(500).json({
-            mensaje: "Error al eliminar doctor"
-        });
+    if (!doctor) {
+      return res.status(404).json({
+        mensaje: "Doctor no encontrado",
+      });
     }
+
+    res.json({
+      mensaje: "Doctor eliminado",
+    });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al eliminar el doctor",
+    });
+  }
 });
 
 export default router;

@@ -1,5 +1,9 @@
 import express from 'express';
 import Paciente from '../modelos/Paciente.js';
+import { alertaExito,
+        alertaError,
+        alertaConfirmacion
+ } from "../utils/alertas.js";
 
 const router = express.Router();
 
@@ -12,7 +16,9 @@ router.get('/', async (req, res) => {
         console.error("Error al obtener pacientes:", error);
         res.status(500).json({
             mensaje: "Error al obtener pacientes"
+             
         });
+        alertaError("Error al obtener los pacientes")
     }
 });
 
@@ -38,6 +44,7 @@ router.get('/dni/:dni', async (req, res) => {
         res.status(500).json({
             mensaje: "Error al buscar paciente"
         });
+       
     }
 });
 
@@ -79,6 +86,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({
             mensaje: "Error al crear paciente"
         });
+        alertaError("Error al guardar")
     }
 });
 
@@ -140,6 +148,7 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({
             mensaje: "Error al eliminar paciente"
         });
+        alertaError("Error al eliminar los pacientes")
     }
 });
 
