@@ -3,7 +3,7 @@ import Paciente from '../modelos/Paciente.js';
 import { alertaExito,
         alertaError,
         alertaConfirmacion
- } from "../utils/alertas.js";
+ } from "../../src/utils/alertas.js";
 
 const router = express.Router();
 

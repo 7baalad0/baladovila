@@ -2,7 +2,7 @@
   <div class="xestion-doctores">
     <h4>👨‍⚕️ Xestión de doctores</h4>
 
-    <form @submit.prevent="saveDoctor">
+    <form @submit.prevent="gardarDoctor">
       <div class="fila">
         <div class="campo">
           <label for="nomedoc">Nome:</label>
@@ -10,18 +10,22 @@
             id="nomedoc"
             v-model="novoDoctor.nomedoc"
             type="text"
+            minlength="2"
+            maxlength="60"
             required
           />
         </div>
 
         <div class="campo">
           <label for="apeldoc">Apelidos:</label>
-          <input
-            id="apeldoc"
-            v-model="novoDoctor.apeldoc"
-            type="text"
-            required
-          />
+            <input
+              id="apeldoc"
+              v-model="novoDoctor.apeldoc"
+              type="text"
+              minlength="2"
+              maxlength="60"
+              required
+            />
         </div>
 
         <div class="campo">
@@ -60,12 +64,16 @@
 
         <div class="campo">
           <label for="movildoc">Móbil:</label>
-          <input
-            id="movildoc"
-            v-model="novoDoctor.movildoc"
-            type="tel"
-            required
-          />
+            <input
+              id="movildoc"
+              v-model="novoDoctor.movildoc"
+              type="tel"
+              minlength="9"
+              maxlength="9"
+              pattern="[67][0-9]{8}"
+              title="O móbil debe comezar por 6 ou 7 e ter 9 díxitos."
+              required
+            />
         </div>
 
         <div class="campo">
@@ -74,6 +82,7 @@
             id="maildoc"
             v-model="novoDoctor.maildoc"
             type="email"
+             required
           />
         </div>
       </div>
@@ -81,6 +90,10 @@
       <p v-if="mensajeError" class="mensaje-error" role="alert">
         {{ mensajeError }}
       </p>
+
+          <p v-if="mensajeExito" class="mensaje-exito">
+      {{ mensajeExito }}
+    </p>
 
       <p
         v-if="mensajeEspecialidades"
@@ -198,6 +211,7 @@ const especialidades = ref([])
 const editandoId = ref(null)
 const mensajeError = ref('')
 const mensajeEspecialidades = ref('')
+const mensajeExito = ref('')
 
 function formularioInicial() {
   return {
@@ -249,6 +263,45 @@ onMounted(async () => {
 async function gardarDoctor() {
   mensajeError.value = ''
 
+  // Comprobar nome
+  if (novoDoctor.nomedoc.trim().length < 2) {
+    mensajeError.value = 'O nome debe ter polo menos 2 caracteres.'
+    return
+  }
+
+  // Comprobar apelidos
+  if (novoDoctor.apeldoc.trim().length < 2) {
+    mensajeError.value = 'Os apelidos deben ter polo menos 2 caracteres.'
+    return
+  }
+
+  // Comprobar colexiado
+  if (novoDoctor.coledoc === null) {
+    mensajeError.value = 'Debes indicar se o doutor está colexiado.'
+    return
+  }
+
+  // Comprobar móbil
+  if (!/^[67]\d{8}$/.test(novoDoctor.movildoc.trim())) {
+    mensajeError.value = 'O móbil debe comezar por 6 ou 7 e ter 9 díxitos.'
+    return
+  }
+
+  // Comprobar correo
+  if (
+    novoDoctor.maildoc.trim() !== '' &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoDoctor.maildoc.trim())
+  ) {
+    mensajeError.value = 'O correo electrónico non ten un formato válido.'
+    return
+  }
+
+  // Comprobar especialidade
+  if (!novoDoctor.espedoc) {
+    mensajeError.value = 'Debes seleccionar unha especialidade.'
+    return
+  }
+
   const doctor = {
     nomedoc: novoDoctor.nomedoc.trim(),
     apeldoc: novoDoctor.apeldoc.trim(),
@@ -260,13 +313,16 @@ async function gardarDoctor() {
 
   try {
     if (editandoId.value === null) {
-      await saveDoctor(doctor)
+      await saveDoctor(doctor);
+      await alertaExito('Doutor gardado correctamente.')
     } else {
-      await modifyDoctor(editandoId.value, doctor)
+      await modifyDoctor(editandoId.value, doctor);
+      await alertaExito('Doutor actualizado correctamente.')
     }
 
     await cargarDoctores()
     limparFormulario()
+
   } catch (error) {
     console.error('Erro ao gardar o doutor:', error)
 
@@ -323,6 +379,7 @@ function limparFormulario() {
 
   editandoId.value = null
   mensajeError.value = ''
+  mensajeExito.value = ''
 }
 </script>
 
