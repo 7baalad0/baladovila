@@ -1,0 +1,12 @@
+voy a crear un nuevo componente llamado XestionCitas. Con estos campos: ID cita, con el id de la cita, paciente, con el dni del paciente, doctor, con el id del doctor, fecha, hora, motivo de la cita, un campo grande de texto de diagnostico-tratamiento
+
+
+
+
+- paginacion
+
+- filtrar por especialidade
+
+- generar pdf tabla en ambos
+
+- store nsq

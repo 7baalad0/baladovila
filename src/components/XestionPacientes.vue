@@ -247,6 +247,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { obtenerProvincias, obtenerMunicipios } from "../api/municipios.js";
+import {usepacienteStore} from "../stores/pacientes.js";
 import {
   savePacientes,
   getPacientes,
@@ -260,6 +261,8 @@ import { alertaExito,
  } from "../utils/alertas.js";
 
 const pacientes = ref([]);
+
+const pacienteStore = usepacienteStore();
 
 const provincias = ref([]);
 const municipios = ref([]);
@@ -328,6 +331,11 @@ onMounted(async () => {
   pacientes.value = await getPacientes();
 });
 
+function seleccionarPaciente(paciente){
+  const pacienteStore = usepacienteStore();
+  pacienteStore.seleccionarPaciente(paciente);
+}
+
 async function cargarMunicipios() {
   if (novoPaciente.provincia === "") {
     municipios.value = [];
@@ -377,6 +385,7 @@ async function gardarPaciente() {
 
     // La tabla se carga SIEMPRE desde MongoDB
     pacientes.value = await getPacientes();
+
 
     limpiarFormulario();
 
