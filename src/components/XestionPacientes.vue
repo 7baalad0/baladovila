@@ -210,8 +210,11 @@
         </thead>
 
         <tbody>
-          <tr v-for="(u, index) in pacientes" :key="index">
-            <td>{{ index + 1 }}</td>
+          <tr
+            v-for="(u, index) in pacientesPaginados"
+            :key="u.id"
+          >
+            <td>{{ (paginaActualPacientes - 1) * pacientesPorPagina + index + 1 }}</td>
             <td class="dni-tabla">{{ u.dni }}</td>
             <td>{{ u.nome }}</td>
             <td>{{ u.correo }}</td>
@@ -221,7 +224,7 @@
             <td class="acciones">
               <button
                 type="button"
-                @click="editarPaciente(index)"
+                @click="editarPaciente((paginaActualPacientes - 1) * pacientesPorPagina + index)"
                 title="Editar"
               >
                 ✏️
@@ -229,7 +232,7 @@
 
               <button
                 type="button"
-                @click="eliminarPaciente(index)"
+                @click="eliminarPaciente((paginaActualPacientes - 1) * pacientesPorPagina + index)"
                 title="Eliminar"
               >
                 🗑️
@@ -240,14 +243,39 @@
       </table>
     </div>
 
-    <p v-else>Non hai pacientes cargados.</p>
+   <p v-if="pacientes.length === 0">Non hai pacientes cargados.</p>
   </div>
+
+  <div v-if="pacientes.length > 0" class="paginacion">
+    <button
+      type="button"
+      @click="paginaAnteriorPacientes"
+      :disabled="paginaActualPacientes === 1"
+      title="Página anterior"
+    >
+      ←
+    </button>
+
+    <span>
+      Página {{ paginaActualPacientes }} de {{ totalPaginasPacientes }}
+    </span>
+
+    <button
+      type="button"
+      @click="paginaSiguientePacientes"
+      :disabled="paginaActualPacientes === totalPaginasPacientes"
+      title="Página siguiente"
+    >
+      →
+    </button>
+  </div>
+
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import { obtenerProvincias, obtenerMunicipios } from "../api/municipios.js";
-import {usepacienteStore} from "../stores/pacientes.js";
+import {usePacienteStore} from "../store/pacienteStore.js";
 import {
   savePacientes,
   getPacientes,
@@ -262,7 +290,40 @@ import { alertaExito,
 
 const pacientes = ref([]);
 
-const pacienteStore = usepacienteStore();
+// Paginación
+const paginaActualPacientes = ref(1);
+const pacientesPorPagina = 5;
+
+const totalPaginasPacientes = computed(() =>
+  Math.max(1, Math.ceil(pacientes.value.length / pacientesPorPagina))
+);
+
+const pacientesPaginados = computed(() => {
+  const inicio = (paginaActualPacientes.value - 1) * pacientesPorPagina;
+
+  return pacientes.value.slice(inicio, inicio + pacientesPorPagina);
+});
+
+function paginaAnteriorPacientes() {
+  if (paginaActualPacientes.value > 1) {
+    paginaActualPacientes.value--;
+  }
+}
+
+function paginaSiguientePacientes() {
+  if (paginaActualPacientes.value < totalPaginasPacientes.value) {
+    paginaActualPacientes.value++;
+  }
+}
+
+// Evitar quedarse en una página vacía al eliminar pacientes
+function ajustarPaginaPacientes() {
+  if (paginaActualPacientes.value > totalPaginasPacientes.value) {
+    paginaActualPacientes.value = totalPaginasPacientes.value;
+  }
+}
+
+const pacienteStore = usePacienteStore();
 
 const provincias = ref([]);
 const municipios = ref([]);
@@ -332,7 +393,7 @@ onMounted(async () => {
 });
 
 function seleccionarPaciente(paciente){
-  const pacienteStore = usepacienteStore();
+  const pacienteStore = usePacienteStore();
   pacienteStore.seleccionarPaciente(paciente);
 }
 
@@ -385,6 +446,7 @@ async function gardarPaciente() {
 
     // La tabla se carga SIEMPRE desde MongoDB
     pacientes.value = await getPacientes();
+    ajustarPaginaPacientes();
 
 
     limpiarFormulario();
@@ -429,6 +491,7 @@ async function eliminarPaciente(index) {
     await deletePaciente(paciente.id);
 
     pacientes.value = await getPacientes();
+    ajustarPaginaPacientes();
       alertaExito("Paciente eliminado correctamente")
     if (editandoIndex.value === index) {
       limpiarFormulario();
@@ -962,5 +1025,39 @@ tbody td:first-child {
   h4 {
     font-size: 0.9rem;
   }
+}
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.paginacion span {
+  color: #59636b;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.paginacion button {
+  width: 34px;
+  height: 32px;
+  border: 1px solid #87e474;
+  border-radius: 5px;
+  background: #fff;
+  color: #4b8f3c;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.paginacion button:hover:not(:disabled) {
+  background: #effbea;
+}
+
+.paginacion button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 </style>

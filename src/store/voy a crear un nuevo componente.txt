@@ -10,3 +10,19 @@ voy a crear un nuevo componente llamado XestionCitas. Con estos campos: ID cita,
 - generar pdf tabla en ambos
 
 - store nsq
+
+
+
+
+
+
+modelo cita
+
+rutas cita.rutas.js
+
+
+server.js importo citas router
+
+api citas.js
+
+componentes nsq

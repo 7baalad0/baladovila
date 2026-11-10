@@ -146,10 +146,10 @@
 
         <tbody>
           <tr
-            v-for="(doctor, index) in doctores"
+            v-for="(doctor, index) in doctoresPaginados"
             :key="doctor._id"
           >
-            <td>{{ index + 1 }}</td>
+            <td>{{ (paginaActual - 1) * doctoresPorPagina + index + 1 }}</td>
             <td>{{ doctor.nomedoc }}</td>
             <td>{{ doctor.apeldoc }}</td>
             <td class="colexiado-tabla">
@@ -181,14 +181,42 @@
       </table>
     </div>
 
-    <p v-else class="sen-doctores">
+  
+
+    <p v-if="doctores.length === 0" class="sen-doctores">
       Non hai doctores cargados.
     </p>
   </div>
+
+  <div v-if="doctores.length > 0" class="paginacion">
+  <button
+    type="button"
+    @click="paginaAnterior"
+    :disabled="paginaActual === 1"
+    title="Páxina anterior"
+  >
+    ←
+  </button>
+
+  <span>
+    Páxina {{ paginaActual }} de {{ totalPaginas }}
+  </span>
+
+  <button
+    type="button"
+    @click="paginaSiguiente"
+    :disabled="paginaActual === totalPaginas"
+    title="Páxina seguinte"
+  >
+    →
+  </button>
+</div>
+
+
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed } from 'vue'
 
 import {
   getDoctores,
@@ -212,6 +240,32 @@ const editandoId = ref(null)
 const mensajeError = ref('')
 const mensajeEspecialidades = ref('')
 const mensajeExito = ref('')
+
+// Paginación
+const paginaActual = ref(1)
+const doctoresPorPagina = 5
+
+const totalPaginas = computed(() =>
+  Math.max(1, Math.ceil(doctores.value.length / doctoresPorPagina))
+)
+
+const doctoresPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * doctoresPorPagina
+
+  return doctores.value.slice(inicio, inicio + doctoresPorPagina)
+})
+
+function paginaAnterior() {
+  if (paginaActual.value > 1) {
+    paginaActual.value--
+  }
+}
+
+function paginaSiguiente() {
+  if (paginaActual.value < totalPaginas.value) {
+    paginaActual.value++
+  }
+}
 
 function formularioInicial() {
   return {
@@ -649,5 +703,42 @@ tbody td:first-child {
   table {
     min-width: 650px;
   }
+
+  
+}
+
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.paginacion span {
+  color: #59636b;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.paginacion button {
+  width: 34px;
+  height: 32px;
+  border: 1px solid #aa3bff;
+  border-radius: 5px;
+  background: #fff;
+  color: #9227e5;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.paginacion button:hover:not(:disabled) {
+  background: #f3e5ff;
+}
+
+.paginacion button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 </style>
