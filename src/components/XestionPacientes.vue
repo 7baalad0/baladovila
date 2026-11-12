@@ -189,6 +189,15 @@
   >
     🔍
   </button>
+  <button
+  type="button"
+  class="btn-imprimir"
+  @click="exportarPacientesPDF"
+  :disabled="pacientes.length === 0"
+  title="Exportar listado a PDF"
+>
+  🖨️
+</button>
 
 
 </div>
@@ -288,6 +297,8 @@ import { alertaExito,
         alertaConfirmacion
  } from "../utils/alertas.js";
 
+import { generarPDF } from "../utils/pdf.js";
+
 const pacientes = ref([]);
 
 // Paginación
@@ -322,6 +333,8 @@ function ajustarPaginaPacientes() {
     paginaActualPacientes.value = totalPaginasPacientes.value;
   }
 }
+
+
 
 const pacienteStore = usePacienteStore();
 
@@ -396,6 +409,37 @@ function seleccionarPaciente(paciente){
   const pacienteStore = usePacienteStore();
   pacienteStore.seleccionarPaciente(paciente);
 }
+
+
+// Exportar todos los pacientes a PDF
+function exportarPacientesPDF() {
+    if (pacientes.value.length === 0) {
+        alertaError("No hay pacientes para exportar.");
+        return;
+    }
+
+    generarPDF(
+        "Listado de pacientes",
+        [
+            "#",
+            "DNI/CIF",
+            "Nome",
+            "Correo",
+            "Provincia"
+        ],
+        pacientes.value.map((paciente, index) => [
+            index + 1,
+            paciente.dni,
+            paciente.nome,
+            paciente.correo,
+            paciente.provincia
+        ]),
+        "listado_pacientes.pdf",
+        "portrait"
+    );
+}
+
+
 
 async function cargarMunicipios() {
   if (novoPaciente.provincia === "") {
@@ -1058,6 +1102,29 @@ tbody td:first-child {
 
 .paginacion button:disabled {
   opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-imprimir {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #59636b;
+  border: 1px solid #d9dfe3;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-imprimir:hover:not(:disabled) {
+  background-color: #e9e9e9;
+  border-color: #b8c2c8;
+}
+
+.btn-imprimir:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 </style>

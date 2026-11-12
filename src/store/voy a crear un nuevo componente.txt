@@ -3,7 +3,7 @@ voy a crear un nuevo componente llamado XestionCitas. Con estos campos: ID cita,
 
 
 
-- paginacion
+- paginacion ✅
 
 - filtrar por especialidade
 
@@ -12,6 +12,7 @@ voy a crear un nuevo componente llamado XestionCitas. Con estos campos: ID cita,
 - store nsq
 
 
+dni existe en alter paciente
 
 
 
@@ -26,3 +27,4 @@ server.js importo citas router
 api citas.js
 
 componentes nsq
+

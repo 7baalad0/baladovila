@@ -1,3 +1,4 @@
+
 <template>
   <div class="xestion-doctores">
     <h4>👨‍⚕️ Xestión de doctores</h4>
@@ -18,14 +19,14 @@
 
         <div class="campo">
           <label for="apeldoc">Apelidos:</label>
-            <input
-              id="apeldoc"
-              v-model="novoDoctor.apeldoc"
-              type="text"
-              minlength="2"
-              maxlength="60"
-              required
-            />
+          <input
+            id="apeldoc"
+            v-model="novoDoctor.apeldoc"
+            type="text"
+            minlength="2"
+            maxlength="60"
+            required
+          />
         </div>
 
         <div class="campo">
@@ -36,7 +37,6 @@
             required
           >
             <option value="">Seleccionar</option>
-
             <option
               v-for="especialidade in especialidades"
               :key="especialidade.id"
@@ -64,16 +64,16 @@
 
         <div class="campo">
           <label for="movildoc">Móbil:</label>
-            <input
-              id="movildoc"
-              v-model="novoDoctor.movildoc"
-              type="tel"
-              minlength="9"
-              maxlength="9"
-              pattern="[67][0-9]{8}"
-              title="O móbil debe comezar por 6 ou 7 e ter 9 díxitos."
-              required
-            />
+          <input
+            id="movildoc"
+            v-model="novoDoctor.movildoc"
+            type="tel"
+            minlength="9"
+            maxlength="9"
+            pattern="[67][0-9]{8}"
+            title="O móbil debe comezar por 6 ou 7 e ter 9 díxitos."
+            required
+          />
         </div>
 
         <div class="campo">
@@ -82,45 +82,59 @@
             id="maildoc"
             v-model="novoDoctor.maildoc"
             type="email"
-             required
+            required
           />
         </div>
       </div>
 
       <p v-if="mensajeError" class="mensaje-error" role="alert">
-        {{ mensajeError }}
-      </p>
-
-          <p v-if="mensajeExito" class="mensaje-exito">
-      {{ mensajeExito }}
-    </p>
-
-      <p
-        v-if="mensajeEspecialidades"
-        class="mensaje-error"
-        role="alert"
-      >
-        {{ mensajeEspecialidades }}
+        ⚠️ {{ mensajeError }}
       </p>
 
       <div class="botones-formulario">
         <button
           type="submit"
-          class="btn-principal"
+          class="btn-guardar"
           :disabled="especialidades.length === 0"
         >
-          {{ editandoId === null ? 'Gardar' : 'Actualizar' }}
+          {{ editandoId !== null ? 'Actualizar' : 'Gardar' }}
         </button>
 
-        <div class="botones-secundarios">
+        <button
+          type="button"
+          class="btn-cancelar"
+          v-if="editandoId !== null"
+          @click="limparFormulario"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn-vaciar"
+          v-else
+          @click="limparFormulario"
+        >
+          Vaciar
+        </button>
+
+        <button
+          type="button"
+          class="btn-buscar"
+          @click="buscarDoctor"
+          title="Buscar doutor por nome e apelidos"
+        >
+          🔍
+        </button>
           <button
-            type="button"
-            class="btn-secundario"
-            @click="limparFormulario"
-          >
-            {{ editandoId === null ? 'Vaciar formulario' : 'Cancelar' }}
-          </button>
-        </div>
+          type="button"
+          class="btn-imprimir"
+          @click="exportarDoctoresPDF"
+          :disabled="doctores.length === 0"
+          title="Exportar listado a PDF"
+        >
+          🖨️
+        </button>
       </div>
     </form>
 
@@ -149,12 +163,17 @@
             v-for="(doctor, index) in doctoresPaginados"
             :key="doctor._id"
           >
-            <td>{{ (paginaActual - 1) * doctoresPorPagina + index + 1 }}</td>
+            <td>
+              {{ (paginaActual - 1) * doctoresPorPagina + index + 1 }}
+            </td>
+
             <td>{{ doctor.nomedoc }}</td>
             <td>{{ doctor.apeldoc }}</td>
+
             <td class="colexiado-tabla">
               {{ doctor.coledoc ? 'Si' : 'Non' }}
             </td>
+
             <td>{{ doctor.movildoc }}</td>
             <td>{{ doctor.maildoc || '—' }}</td>
             <td>{{ doctor.espedoc }}</td>
@@ -181,38 +200,35 @@
       </table>
     </div>
 
-  
-
-    <p v-if="doctores.length === 0" class="sen-doctores">
+    <p v-else class="sen-doctores">
       Non hai doctores cargados.
     </p>
+
+    <!-- Paginación -->
+    <div v-if="doctores.length > 0" class="paginacion">
+      <button
+        type="button"
+        @click="paginaAnterior"
+        :disabled="paginaActual === 1"
+        title="Páxina anterior"
+      >
+        ←
+      </button>
+
+      <span>
+        Páxina {{ paginaActual }} de {{ totalPaginas }}
+      </span>
+
+      <button
+        type="button"
+        @click="paginaSiguiente"
+        :disabled="paginaActual === totalPaginas"
+        title="Páxina seguinte"
+      >
+        →
+      </button>
+    </div>
   </div>
-
-  <div v-if="doctores.length > 0" class="paginacion">
-  <button
-    type="button"
-    @click="paginaAnterior"
-    :disabled="paginaActual === 1"
-    title="Páxina anterior"
-  >
-    ←
-  </button>
-
-  <span>
-    Páxina {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <button
-    type="button"
-    @click="paginaSiguiente"
-    :disabled="paginaActual === totalPaginas"
-    title="Páxina seguinte"
-  >
-    →
-  </button>
-</div>
-
-
 </template>
 
 <script setup>
@@ -229,17 +245,18 @@ import {
   obtenerEspecialidades
 } from '../api/especialidades.js'
 
-import { alertaExito,
-        alertaError,
-        alertaConfirmacion
- } from "../utils/alertas.js";
+import {
+  alertaExito,
+  alertaError,
+  alertaConfirmacion
+} from '../utils/alertas.js'
+
+import { generarPDF } from "../utils/pdf.js";
 
 const doctores = ref([])
 const especialidades = ref([])
 const editandoId = ref(null)
 const mensajeError = ref('')
-const mensajeEspecialidades = ref('')
-const mensajeExito = ref('')
 
 // Paginación
 const paginaActual = ref(1)
@@ -267,6 +284,46 @@ function paginaSiguiente() {
   }
 }
 
+function ajustarPagina() {
+  if (paginaActual.value > totalPaginas.value) {
+    paginaActual.value = totalPaginas.value
+  }
+}
+
+
+// Exportar todos los doctores a PDF
+function exportarDoctoresPDF() {
+    if (doctores.value.length === 0) {
+        alertaError("No hay doctores para exportar.");
+        return;
+    }
+
+    generarPDF(
+        "Listado de doctores",
+        [
+            "#",
+            "Nome",
+            "Apelidos",
+            "Colexiado",
+            "Móbil",
+            "Correo",
+            "Especialidade"
+        ],
+        doctores.value.map((doctor, index) => [
+            index + 1,
+            doctor.nomedoc,
+            doctor.apeldoc,
+            doctor.coledoc ? "Si" : "Non",
+            doctor.movildoc,
+            doctor.maildoc || "—",
+            doctor.espedoc
+        ]),
+        "listado_doctores.pdf",
+        "landscape"
+    );
+}
+
+
 function formularioInicial() {
   return {
     nomedoc: '',
@@ -282,35 +339,36 @@ const novoDoctor = reactive(formularioInicial())
 
 async function cargarDoctores() {
   doctores.value = await getDoctores()
+  ajustarPagina()
 }
 
 async function cargarEspecialidades() {
   try {
     especialidades.value = await obtenerEspecialidades()
-    mensajeEspecialidades.value = ''
 
     if (especialidades.value.length === 0) {
-      mensajeEspecialidades.value =
-        'Non hai especialidades dispoñibles.'
+      mensajeError.value = 'Non hai especialidades dispoñibles.'
     }
   } catch (error) {
     console.error('Erro ao cargar as especialidades:', error)
 
-    mensajeEspecialidades.value =
+    mensajeError.value =
       'Non se puideron cargar as especialidades.'
   }
 }
 
 onMounted(async () => {
-  await Promise.all([
-    cargarEspecialidades(),
-    cargarDoctores().catch((error) => {
-      console.error('Erro ao cargar os doutores:', error)
+  try {
+    await Promise.all([
+      cargarEspecialidades(),
+      cargarDoctores()
+    ])
+  } catch (error) {
+    console.error('Erro ao cargar os datos:', error)
 
-      mensajeError.value =
-        'Non se puideron cargar os doutores.'
-    })
-  ])
+    mensajeError.value =
+      'Non se puideron cargar os datos dos doutores.'
+  }
 })
 
 // Gardar ou actualizar doutor
@@ -337,15 +395,13 @@ async function gardarDoctor() {
 
   // Comprobar móbil
   if (!/^[67]\d{8}$/.test(novoDoctor.movildoc.trim())) {
-    mensajeError.value = 'O móbil debe comezar por 6 ou 7 e ter 9 díxitos.'
+    mensajeError.value =
+      'O móbil debe comezar por 6 ou 7 e ter 9 díxitos.'
     return
   }
 
   // Comprobar correo
-  if (
-    novoDoctor.maildoc.trim() !== '' &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoDoctor.maildoc.trim())
-  ) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoDoctor.maildoc.trim())) {
     mensajeError.value = 'O correo electrónico non ten un formato válido.'
     return
   }
@@ -367,10 +423,10 @@ async function gardarDoctor() {
 
   try {
     if (editandoId.value === null) {
-      await saveDoctor(doctor);
+      await saveDoctor(doctor)
       await alertaExito('Doutor gardado correctamente.')
     } else {
-      await modifyDoctor(editandoId.value, doctor);
+      await modifyDoctor(editandoId.value, doctor)
       await alertaExito('Doutor actualizado correctamente.')
     }
 
@@ -384,6 +440,37 @@ async function gardarDoctor() {
       error.response?.data?.mensaje ||
       'Non se puido gardar o doutor.'
   }
+}
+
+// Buscar doutor por nome e apelidos
+function buscarDoctor() {
+  mensajeError.value = ''
+
+  const nome = novoDoctor.nomedoc.trim().toLocaleLowerCase('es')
+  const apelidos = novoDoctor.apeldoc.trim().toLocaleLowerCase('es')
+
+  if (!nome || !apelidos) {
+    mensajeError.value = 'Introduce o nome e os apelidos para buscar.'
+    return
+  }
+
+  const coincidencias = doctores.value.filter(doctor =>
+    doctor.nomedoc.trim().toLocaleLowerCase('es') === nome &&
+    doctor.apeldoc.trim().toLocaleLowerCase('es') === apelidos
+  )
+
+  if (coincidencias.length === 0) {
+    mensajeError.value = 'Non existe ningún doutor con ese nome e apelidos.'
+    return
+  }
+
+  if (coincidencias.length > 1) {
+    mensajeError.value =
+      'Hai varios doutores con ese nome e apelidos. Non se pode identificar un único rexistro.'
+    return
+  }
+
+  editarDoctor(coincidencias[0])
 }
 
 // Cargar os datos no formulario
@@ -411,6 +498,14 @@ async function eliminarDoctor(doctor) {
   mensajeError.value = ''
 
   try {
+    const respuesta = await alertaConfirmacion(
+      'Seguro que quieres eliminar este doutor?'
+    )
+
+    if (!respuesta.isConfirmed) {
+      return
+    }
+
     await deleteDoctor(doctor._id)
 
     if (editandoId.value === doctor._id) {
@@ -418,12 +513,13 @@ async function eliminarDoctor(doctor) {
     }
 
     await cargarDoctores()
+
+    await alertaExito('Doutor eliminado correctamente.')
+
   } catch (error) {
     console.error('Erro ao eliminar o doutor:', error)
 
-    mensajeError.value =
-      error.response?.data?.mensaje ||
-      'Non se puido eliminar o doutor.'
+    alertaError('Non se puido eliminar o doutor.')
   }
 }
 
@@ -433,7 +529,6 @@ function limparFormulario() {
 
   editandoId.value = null
   mensajeError.value = ''
-  mensajeExito.value = ''
 }
 </script>
 
@@ -443,11 +538,15 @@ function limparFormulario() {
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
-  background: #fff;
+  background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
 }
+
+/* =========================
+   FORMULARIO
+   ========================= */
 
 form {
   width: 100%;
@@ -459,31 +558,32 @@ form {
 
 .fila {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.2rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
   width: 100%;
+  gap: 0.5rem;
 }
 
 .campo {
-  display: flex;
+  display: grid;
+  grid-template-columns: 110px 183px;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.35rem;
   min-width: 0;
 }
 
 .campo label {
-  flex: 0 0 auto;
+  width: 110px;
   color: #4b5563;
   font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap;
+  text-align: left;
 }
 
 .campo input,
 .campo select {
-  width: 100%;
-  min-width: 0;
-  flex: 1;
+  width: 183px;
   height: 36px;
   padding: 0 0.65rem;
   border: 1px solid #d9dfe3;
@@ -493,7 +593,6 @@ form {
   font-size: 0.88rem;
   box-sizing: border-box;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .campo input:hover,
@@ -503,67 +602,123 @@ form {
 
 .campo input:focus,
 .campo select:focus {
-  border-color: #aa3bff;
-  box-shadow: 0 0 0 2px rgba(170, 59, 255, 0.14);
+  border-color: #87e474;
+  box-shadow: 0 0 0 2px rgba(135, 228, 116, 0.15);
 }
+
+/* =========================
+   MENSAJES
+   ========================= */
+
+.mensaje-error {
+  margin: -0.4rem 0 0;
+  color: #c0392b;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* =========================
+   BOTONES
+   ========================= */
 
 .botones-formulario {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 0.3rem;
+  gap: 1.4rem;
 }
 
-.btn-principal {
-  grid-column: 2;
-  min-height: 38px;
-  padding: 0.55rem 1.8rem;
-  border: none;
-  border-radius: 5px;
-  background: #aa3bff;
-  color: #fff;
-  font-size: 0.92rem;
-  font-weight: 600;
+.btn-guardar {
+  align-self: center;
+  min-width: 110px;
+  height: 36px;
+  padding: 0 1.5rem;
+  background-color: #87e474;
+  color: white;
+  border: 1px solid #75d863;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
 }
 
-.btn-principal:hover:not(:disabled) {
-  background: #9227e5;
+.btn-guardar:hover:not(:disabled) {
+  background-color: #72d461;
+  transform: translateY(-1px);
 }
 
-.btn-principal:disabled {
-  opacity: 0.6;
+.btn-guardar:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-guardar:disabled {
+  background-color: #b8bdb9;
+  border-color: #b8bdb9;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
-.botones-secundarios {
-  grid-column: 3;
-  justify-self: end;
-}
-
-.btn-secundario {
-  min-height: 32px;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid #f0b7bd;
-  border-radius: 5px;
-  background: #fff1f2;
-  color: #a33b46;
-  font-size: 0.82rem;
+.btn-cancelar,
+.btn-vaciar {
+  min-width: 90px;
+  height: 32px;
+  padding: 0 1rem;
+  background-color: #f8d7d7;
+  color: #9b4f4f;
+  border: 1px solid #edbaba;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.btn-secundario:hover {
-  background: #ffe1e4;
+.btn-cancelar:hover,
+.btn-vaciar:hover {
+  background-color: #f2c4c4;
+  border-color: #e3a3a3;
 }
 
-.mensaje-error {
-  margin: 0;
-  color: #b42318;
-  font-size: 0.9rem;
+.btn-buscar {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  margin-left: 0.4rem;
+  background-color: #f4f4f4;
+  color: #59636b;
+  border: 1px solid #d9dfe3;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-buscar:hover {
+  background-color: #e9e9e9;
+  border-color: #b8c2c8;
+}
+
+/* =========================
+   TÍTULOS
+   ========================= */
+
+h4 {
+  margin: 0 0 1.2rem;
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  background-color: #87e474;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
   text-align: center;
 }
+
+/* =========================
+   TABLA
+   ========================= */
 
 .tabla-contenedor {
   width: 100%;
@@ -575,30 +730,35 @@ form {
 table {
   width: 100%;
   min-width: 0;
-  table-layout: fixed;
   border-collapse: collapse;
   margin: 0;
   font-size: 0.82rem;
-  background: #fff;
+  background: white;
+  table-layout: fixed;
 }
 
 th {
-  padding: 0.7rem 0.35rem;
+  padding: 0.75rem 0.6rem;
   background-color: #f4f7f5;
   color: #4b5563;
   border-bottom: 2px solid #dfe5e1;
   font-size: 0.78rem;
   font-weight: 600;
   text-align: center;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 td {
-  padding: 0.65rem 0.4rem;
+  padding: 0.7rem 0.6rem;
   border-bottom: 1px solid #edf0ee;
   color: #59636b;
   vertical-align: middle;
-  overflow-wrap: anywhere;
+}
+
+th,
+td {
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 tbody tr:last-child td {
@@ -610,102 +770,55 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background-color: #faf7ff;
-}
-
-tbody td:first-child,
-.colexiado-tabla {
-  text-align: center;
+  background-color: #f8fcf7;
 }
 
 tbody td:first-child {
+  width: 35px;
+  text-align: center;
   color: #8a9399;
+}
+
+.colexiado-tabla {
+  text-align: center;
 }
 
 .acciones {
   text-align: center;
   white-space: nowrap;
+  width: 90px;
 }
 
 .acciones button {
-  width: 28px;
+  width: 32px;
   height: 30px;
-  margin: 0 1px;
+  margin: 0 2px;
   padding: 0;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  font-size: 0.95rem;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .acciones button:hover {
-  background-color: #f0e5ff;
+  background-color: #f0f5f1;
   transform: scale(1.08);
 }
 
 .sen-doctores {
-  margin: 0;
-  padding: 1.5rem;
   color: #7a8389;
   text-align: center;
+  padding: 1.5rem;
+  margin: 0;
 }
 
-@media (max-width: 900px) {
-  .xestion-doctores {
-    padding: 1.3rem;
-  }
-
-  .fila {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
-  }
-
-  .campo {
-    width: 100%;
-  }
-
-  .campo label {
-    min-width: 130px;
-  }
-
-  .botones-formulario {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .botones-secundarios {
-    align-self: flex-end;
-  }
-}
-
-@media (max-width: 600px) {
-  .xestion-doctores {
-    padding: 1rem;
-    border-radius: 4px;
-  }
-
-  .campo {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.3rem;
-  }
-
-  .campo label {
-    min-width: 0;
-  }
-
-  .tabla-contenedor {
-    overflow-x: auto;
-  }
-
-  table {
-    min-width: 650px;
-  }
-
-  
-}
+/* =========================
+   PAGINACIÓN
+   ========================= */
 
 .paginacion {
   display: flex;
@@ -724,21 +837,109 @@ tbody td:first-child {
 .paginacion button {
   width: 34px;
   height: 32px;
-  border: 1px solid #aa3bff;
+  border: 1px solid #87e474;
   border-radius: 5px;
   background: #fff;
-  color: #9227e5;
+  color: #4b8f3c;
   font-size: 1.1rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .paginacion button:hover:not(:disabled) {
-  background: #f3e5ff;
+  background: #effbea;
 }
 
 .paginacion button:disabled {
   opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* =========================
+   MÓVIL
+   ========================= */
+
+@media (max-width: 900px) {
+  .xestion-doctores {
+    padding: 1.3rem;
+  }
+
+  .fila {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .campo {
+    grid-template-columns: 135px minmax(0, 1fr);
+    width: 100%;
+  }
+
+  .campo label {
+    width: 135px;
+  }
+
+  .campo input,
+  .campo select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .xestion-doctores {
+    padding: 1rem;
+    border-radius: 4px;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+  }
+
+  .campo label {
+    width: auto;
+  }
+
+  .campo input,
+  .campo select {
+    width: 100%;
+  }
+
+  .tabla-contenedor {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 650px;
+  }
+
+  .botones-formulario {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+}
+
+.btn-imprimir {
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #59636b;
+  border: 1px solid #d9dfe3;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-imprimir:hover:not(:disabled) {
+  background-color: #e9e9e9;
+  border-color: #b8c2c8;
+}
+
+.btn-imprimir:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 </style>
