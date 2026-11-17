@@ -7,10 +7,13 @@ voy a crear un nuevo componente llamado XestionCitas. Con estos campos: ID cita,
 
 - filtrar por especialidade
 
-- generar pdf tabla en ambos
+- generar pdf tabla en ambos 
 
 - store nsq
 
+- SOBRE NOS
+
+- store pinia
 
 dni existe en alter paciente
 
