@@ -29,6 +29,7 @@ import FooTer from './components/FooTer.vue'
 /* El contenido ocupa el espacio disponible y empuja el footer abajo */
 #app > :nth-child(2) {
   flex: 1;
+   min-height: 0;
 }
 
 /* Responsive */

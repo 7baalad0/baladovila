@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer-content footer">
+  <footer class="footer-content footer" :class="{ 'footer-inicio': route.path === '/' }">
 
      <router-link to="/avisolegal" class="aviso-legal-link" target="blank" >Aviso Legal</router-link>
 
@@ -7,7 +7,11 @@
   </footer>
 </template>
 
-<script setup></script>
+<script setup>
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+</script>
 
 <style scoped>
 .footer {
@@ -39,5 +43,8 @@
 }
 .aviso-legal-link:hover {
   color: blue; /* Cambia a cor ao pasar o cursor */
+}
+.footer.footer-inicio {
+  margin-top: 0;
 }
 </style>

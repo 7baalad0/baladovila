@@ -107,9 +107,10 @@ import videoInicio from "../assets/video.mp4";
 .inicio {
   position: relative;
   width: 100%;
-  min-height: 720px;
-  height: calc(100vh - 110px);
-  max-height: 950px;
+min-height: 0;
+height: auto;
+max-height: none;
+flex: 1;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -337,7 +338,7 @@ h1 span {
 
 @media (max-width: 900px) {
   .inicio {
-    min-height: 680px;
+    min-height: 0;
   }
 
   .contenido {
@@ -351,7 +352,7 @@ h1 span {
 
 @media (max-width: 600px) {
   .inicio {
-    min-height: 760px;
+    min-height: 0;
     height: auto;
   }
 
