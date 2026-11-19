@@ -1,7 +1,8 @@
 <template>
   <nav class="navbar">
-    <div class="logo">XestiónApp</div>
-
+<RouterLink to="/" class="logo">
+  <img src="/icono.jpg" alt="Sanidad Teis" />
+</RouterLink>
     <!-- NUEVO -->
     <button class="hamburger" @click="isOpen = !isOpen">☰</button>
 
@@ -13,7 +14,11 @@
       </li>
 
       <li><RouterLink to="/xestion-doctores">Xestión de Doctores</RouterLink></li>
+                <li><RouterLink to="/xestion-citas">
+  Xestión de citas
+</RouterLink></li>
             <li><RouterLink to="/SobreNos">Sobre nós</RouterLink></li>
+  
     </ul>
   </nav>
 </template>
@@ -32,10 +37,19 @@ const isOpen = ref(false); // actívase cuando fago click
   background: #027951;
   color: white;
 }
-
 .logo {
-  font-weight: bold;
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logo img {
+  display: block;
+  height: 48px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
 }
 
 .menu {
@@ -82,5 +96,8 @@ const isOpen = ref(false); // actívase cuando fago click
   .menu.open {
     display: flex;
   }
+  .logo img {
+  height: 40px;
+}
 }
 </style>

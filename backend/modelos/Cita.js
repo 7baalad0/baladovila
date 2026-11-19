@@ -1,33 +1,66 @@
 
 import mongoose from "mongoose";
 
-const CitaSchema = new mongoose.Schema(
-    {
-        pacienteId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Paciente",
-            required: true
-        },
-        doctorId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Doctor",
-            required: true
-        },
-        fecha: { type: String, required: true },
-        hora: { type: String, required: true },
-        motivo: { type: String, required: true },
-        observacions: {
-            type: String,
-            default: ""
-        },
-        estado: {
-            type: String,
-            default: "pendente"
-        }
+const citaSchema = new mongoose.Schema(
+  {
+    pacienteId: {
+      type: String,
+      required: true,
+      index: true
     },
-    {
-        collection: "citas"
+
+    pacienteDni: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    doctorId: {
+      type: String,
+      required: true
+    },
+
+    doctorNome: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    fecha: {
+      type: String,
+      required: true
+    },
+
+    hora: {
+      type: String,
+      required: true
+    },
+
+    motivo: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    estado: {
+      type: String,
+      enum: ["Pendiente", "Completada"],
+      default: "Pendiente"
+    },
+
+    diagnosticoTratamiento: {
+      type: String,
+      default: ""
     }
+  },
+  {
+    timestamps: true,
+    collection: "citas"
+  }
 );
 
-export default mongoose.model("Cita", CitaSchema);
+const Cita =
+  mongoose.models.Cita ||
+  mongoose.model("Cita", citaSchema);
+
+export default Cita;

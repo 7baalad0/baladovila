@@ -405,11 +405,9 @@ onMounted(async () => {
   pacientes.value = await getPacientes();
 });
 
-function seleccionarPaciente(paciente){
-  const pacienteStore = usePacienteStore();
+function seleccionarPaciente(paciente) {
   pacienteStore.seleccionarPaciente(paciente);
 }
-
 
 // Exportar todos los pacientes a PDF
 function exportarPacientesPDF() {
@@ -482,6 +480,10 @@ async function gardarPaciente() {
       const pacienteActual = pacientes.value[editandoIndex.value];
       
       await updatePaciente(pacienteActual.id, paciente);
+      seleccionarPaciente({
+        ...paciente,
+        id: pacienteActual.id
+      });
       alertaExito("Paciente actualizado correctamente")
       } else {
         return;
@@ -554,6 +556,8 @@ async function eliminarPaciente(index) {
 // Editar paciente
 async function editarPaciente(index) {
   const paciente = pacientes.value[index];
+
+   seleccionarPaciente(paciente);
 
   Object.assign(novoPaciente, paciente);
 

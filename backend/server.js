@@ -7,12 +7,14 @@ import mongoose from "mongoose";
 
 import pacientesRutas from './rutas/pacientes.rutas.js'; //importa el modelo de paciente
 import doctoresRutas from './rutas/doctores.rutas.js'; //importa el modelo de doctor
+import citasRoutes from "./rutas/citas.rutas.js";
 // Creamos la aplicación Express
 const app = express();
 app.use(cors());
 app.use(express.json()); //para que pueda leer json
 app.use('/api/pacientes', pacientesRutas); //usa el modelo de paciente
 app.use('/api/doctores', doctoresRutas); //usa el modelo de doctor
+app.use("/api/citas", citasRoutes);
 //USA EL PUERTO definido en la variables de entorno y si no coge el 3000
 const PORT = process.env.PORT || 3000;
 

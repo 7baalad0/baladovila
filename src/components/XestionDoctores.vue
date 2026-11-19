@@ -29,23 +29,35 @@
           />
         </div>
 
-        <div class="campo">
-          <label for="espedoc">Especialidade:</label>
-          <select
-            id="espedoc"
-            v-model="novoDoctor.espedoc"
-            required
-          >
-            <option value="">Seleccionar</option>
-            <option
-              v-for="especialidade in especialidades"
-              :key="especialidade.id"
-              :value="especialidade.nm"
-            >
-              {{ especialidade.nm }}
-            </option>
-          </select>
-        </div>
+<div class="campo campo-especialidade">
+  <label for="espedoc">Especialidade:</label>
+
+  <div class="control-especialidade">
+    <select
+      id="espedoc"
+      v-model="novoDoctor.espedoc"
+      required
+    >
+      <option value="">Seleccionar</option>
+      <option
+        v-for="especialidade in especialidades"
+        :key="especialidade.id"
+        :value="especialidade.nm"
+      >
+        {{ especialidade.nm }}
+      </option>
+    </select>
+
+    <button
+      type="button"
+      class="btn-buscar"
+      @click="buscarDoctor"
+      title="Filtrar doctores por especialidade"
+    >
+      🔍
+    </button>
+  </div>
+</div>
       </div>
 
       <div class="fila">
@@ -118,14 +130,6 @@
           Vaciar
         </button>
 
-        <button
-          type="button"
-          class="btn-buscar"
-          @click="buscarDoctor"
-          title="Buscar doutor por nome e apelidos"
-        >
-          🔍
-        </button>
           <button
           type="button"
           class="btn-imprimir"
@@ -141,7 +145,7 @@
     <h4>📋 Listaxe de doctores</h4>
 
     <div
-      v-if="doctores.length > 0"
+      v-if="doctoresFiltrados.length > 0"
       class="tabla-contenedor"
     >
       <table>
@@ -200,12 +204,15 @@
       </table>
     </div>
 
-    <p v-else class="sen-doctores">
-      Non hai doctores cargados.
-    </p>
-
+<p v-else class="sen-doctores">
+  {{
+    especialidadeFiltro
+      ? `Non hai doutores da especialidade "${especialidadeFiltro}".`
+      : 'Non hai doctores cargados.'
+  }}
+</p>
     <!-- Paginación -->
-    <div v-if="doctores.length > 0" class="paginacion">
+    <div v-if="doctoresFiltrados.length > 0" class="paginacion">
       <button
         type="button"
         @click="paginaAnterior"
@@ -234,6 +241,8 @@
 <script setup>
 import { onMounted, reactive, ref, computed } from 'vue'
 
+import { useDoctorStore } from "../store/doctorStore.js";
+
 import {
   getDoctores,
   saveDoctor,
@@ -257,21 +266,34 @@ const doctores = ref([])
 const especialidades = ref([])
 const editandoId = ref(null)
 const mensajeError = ref('')
+const doctorStore = useDoctorStore();
+const especialidadeFiltro = ref('')
 
 // Paginación
 const paginaActual = ref(1)
 const doctoresPorPagina = 5
 
+const doctoresFiltrados = computed(() => {
+  if (!especialidadeFiltro.value) {
+    return doctores.value
+  }
+
+  const filtro = especialidadeFiltro.value.trim().toLocaleLowerCase('es')
+
+  return doctores.value.filter(doctor =>
+    (doctor.espedoc || '').trim().toLocaleLowerCase('es') === filtro
+  )
+})
+
 const totalPaginas = computed(() =>
-  Math.max(1, Math.ceil(doctores.value.length / doctoresPorPagina))
+  Math.max(1, Math.ceil(doctoresFiltrados.value.length / doctoresPorPagina))
 )
 
 const doctoresPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * doctoresPorPagina
 
-  return doctores.value.slice(inicio, inicio + doctoresPorPagina)
+  return doctoresFiltrados.value.slice(inicio, inicio + doctoresPorPagina)
 })
-
 function paginaAnterior() {
   if (paginaActual.value > 1) {
     paginaActual.value--
@@ -426,8 +448,14 @@ async function gardarDoctor() {
       await saveDoctor(doctor)
       await alertaExito('Doutor gardado correctamente.')
     } else {
-      await modifyDoctor(editandoId.value, doctor)
-      await alertaExito('Doutor actualizado correctamente.')
+  await modifyDoctor(editandoId.value, doctor)
+
+  doctorStore.seleccionarDoctor({
+    ...doctor,
+    _id: editandoId.value
+  });
+
+  await alertaExito('Doutor actualizado correctamente.')
     }
 
     await cargarDoctores()
@@ -442,39 +470,25 @@ async function gardarDoctor() {
   }
 }
 
-// Buscar doutor por nome e apelidos
+// Buscar doctores por especialidade
 function buscarDoctor() {
   mensajeError.value = ''
 
-  const nome = novoDoctor.nomedoc.trim().toLocaleLowerCase('es')
-  const apelidos = novoDoctor.apeldoc.trim().toLocaleLowerCase('es')
+  especialidadeFiltro.value = novoDoctor.espedoc
+  paginaActual.value = 1
 
-  if (!nome || !apelidos) {
-    mensajeError.value = 'Introduce o nome e os apelidos para buscar.'
-    return
-  }
-
-  const coincidencias = doctores.value.filter(doctor =>
-    doctor.nomedoc.trim().toLocaleLowerCase('es') === nome &&
-    doctor.apeldoc.trim().toLocaleLowerCase('es') === apelidos
-  )
-
-  if (coincidencias.length === 0) {
-    mensajeError.value = 'Non existe ningún doutor con ese nome e apelidos.'
-    return
-  }
-
-  if (coincidencias.length > 1) {
+  if (
+    especialidadeFiltro.value &&
+    doctoresFiltrados.value.length === 0
+  ) {
     mensajeError.value =
-      'Hai varios doutores con ese nome e apelidos. Non se pode identificar un único rexistro.'
-    return
+      `Non hai doutores rexistrados na especialidade "${especialidadeFiltro.value}".`
   }
-
-  editarDoctor(coincidencias[0])
 }
 
 // Cargar os datos no formulario
 function editarDoctor(doctor) {
+  doctorStore.seleccionarDoctor(doctor);
   Object.assign(novoDoctor, {
     nomedoc: doctor.nomedoc ?? '',
     apeldoc: doctor.apeldoc ?? '',
@@ -529,6 +543,8 @@ function limparFormulario() {
 
   editandoId.value = null
   mensajeError.value = ''
+  especialidadeFiltro.value = ''
+paginaActual.value = 1
 }
 </script>
 
@@ -604,6 +620,24 @@ form {
 .campo select:focus {
   border-color: #87e474;
   box-shadow: 0 0 0 2px rgba(135, 228, 116, 0.15);
+}
+
+.campo-especialidade {
+  grid-template-columns: 110px 183px;
+}
+
+.control-especialidade {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 183px;
+  min-width: 0;
+}
+
+.campo-especialidade .control-especialidade select {
+  width: auto;
+  flex: 1;
+  min-width: 0;
 }
 
 /* =========================
@@ -684,9 +718,10 @@ form {
 
 .btn-buscar {
   width: 36px;
-  height: 32px;
+  height: 36px;
   padding: 0;
-  margin-left: 0.4rem;
+  margin: 0;
+  flex-shrink: 0;
   background-color: #f4f4f4;
   color: #59636b;
   border: 1px solid #d9dfe3;
@@ -700,7 +735,6 @@ form {
   background-color: #e9e9e9;
   border-color: #b8c2c8;
 }
-
 /* =========================
    TÍTULOS
    ========================= */
@@ -889,6 +923,13 @@ tbody td:first-child {
     padding: 1rem;
     border-radius: 4px;
   }
+  .campo-especialidade {
+  grid-template-columns: 135px minmax(0, 1fr);
+}
+
+.control-especialidade {
+  width: 100%;
+}
 
   .campo {
     display: flex;
